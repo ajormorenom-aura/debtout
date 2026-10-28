@@ -8,7 +8,11 @@ Lo que la versión nativa añade a la web (código en `native/bridge.js`):
 - **Copia del plan en el almacenamiento nativo**, que el sistema no borra cuando falta espacio (iOS sí puede borrar el de una web).
 - **Copias de seguridad con el menú Compartir**: guardar en Archivos o Drive, o enviártela.
 - **Botón Atrás de Android**: cierra la hoja abierta, vuelve un paso o va a Inicio; en Inicio, sale.
+- **Premium por suscripción** (1 mes gratis y después 0,99 € al mes), cobrada por Apple y Google a través de [RevenueCat](https://www.revenuecat.com). El mes gratis lo controlan las tiendas: una vez por cuenta de Apple o de Google, aunque la persona cambie de correo o reinstale la app. No hace falta pedir correo ni crear cuentas.
+- **Asistente con IA** para Premium: responde dudas sobre deudas y sobre la app y, si la persona lo activa, usa su plan. Funciona a través del servidor de `server/` (ver su README).
 - Vibración al marcar pagos y cerrar el mes, pantalla de inicio y barra de estado con los colores de DebtOut.
+
+Sin Premium, la app es gratis con 1 deuda y 1 meta. La web sigue siendo gratis aparte (con todo incluido mientras dure su beta).
 
 ## Qué necesitas
 
@@ -38,12 +42,29 @@ En Android Studio, el botón ▶ instala la app en el emulador o en tu móvil (c
 1. **El identificador de la app** es `es.debtout.app` (en `capacitor.config.json`, `android/app/build.gradle` y el proyecto de Xcode). Una vez publicada no se puede cambiar. Si prefieres otro (por ejemplo, con tu dominio al revés), cámbialo en esos tres sitios antes de la primera subida.
 2. **Rellena `web/datos-titular.js`**: los textos legales de la app salen de ahí. Las tiendas revisan que la app tenga aviso legal y privacidad completos.
 3. **Publica la web** (ver el README principal): las tiendas piden la dirección de la política de privacidad (`https://tu-dominio/privacidad/`) y una página de soporte (`https://tu-dominio/#preguntas` sirve, con el correo de contacto relleno).
-4. **Revisa los textos legales** (`src/legal_beta.html`) para la versión de las tiendas. Ahora hablan de la web; conviene que también digan:
-   - que la app se descarga de App Store o Google Play y que Apple o Google tratan los datos de la descarga según sus propias políticas;
-   - que los avisos de pago son notificaciones locales que el propio móvil programa (no salen del dispositivo) y que se pueden desactivar;
-   - que iCloud o la copia de seguridad de Google pueden incluir los datos de la app en las copias del propio usuario, si las tiene activadas;
-   - que el proveedor que aloje la web solo interviene en la versión web.
-5. **Sube la versión** en cada envío: `versionCode` y `versionName` en `android/app/build.gradle`; *Version* y *Build* en Xcode. Cada subida a una tienda necesita un número de compilación mayor que el anterior.
+4. **Revisa con un profesional los textos legales** (`src/legal_beta.html`). Ya incluyen un borrador de:
+   - en la privacidad, el asistente de IA (qué se envía, a quién y con qué base legal), la suscripción, las notificaciones locales y las copias de iCloud o Google;
+   - en los términos, las condiciones de Premium (precio, mes gratis, renovación, cancelación, reembolsos) y del asistente.
+
+   Antes de publicar, confirma con un abogado o asesor el derecho de desistimiento, las transferencias internacionales y las condiciones de los proveedores (Anthropic, Cloudflare, RevenueCat), y firma con ellos sus contratos de encargo (DPA). Cuando elijas dónde alojar la web, cambia también la mención a Netlify.
+5. **Configura la suscripción y el asistente** (apartados de abajo) y pon las claves en `src/build.py`.
+6. **Sube la versión** en cada envío: `versionCode` y `versionName` en `android/app/build.gradle`; *Version* y *Build* en Xcode. Cada subida a una tienda necesita un número de compilación mayor que el anterior.
+
+## Configurar la suscripción (1 mes gratis y 0,99 € al mes)
+
+La app cobra Premium con las compras integradas de Apple y Google, que son obligatorias para suscripciones dentro de apps de las tiendas. RevenueCat (gratis hasta 2.500 $ de ingresos al mes) une las dos tiendas, dice a la app si la persona tiene Premium y se lo confirma al servidor del asistente.
+
+1. **App Store Connect** (tu app > Suscripciones): crea un grupo de suscripciones «DebtOut Premium» y dentro una suscripción mensual, por ejemplo `premium_mensual`, a 0,99 €. Añádele una **oferta introductoria gratuita de 1 mes**. Apple solo se la da a quien no la haya usado antes en ese grupo.
+2. **Play Console** (Monetizar > Suscripciones): crea la suscripción `premium_mensual` con un plan base mensual de 0,99 € y una **oferta de prueba gratuita de 1 mes** para clientes nuevos (que nunca hayan tenido esta suscripción). Google solo la ofrece a cuentas que puedan disfrutarla.
+3. **RevenueCat**: crea un proyecto con una app de iOS y otra de Android (conectadas a App Store Connect y Play Console según sus instrucciones), un *entitlement* llamado `premium` con el producto `premium_mensual` de las dos tiendas y una *offering* `default` con un paquete mensual.
+4. Copia las **claves públicas** de RevenueCat (`appl_…` y `goog_…`) en `REVENUECAT_IOS_KEY` y `REVENUECAT_ANDROID_KEY`, arriba de `src/build.py`, y la **clave secreta** (`sk_…`) al servidor del asistente (`server/README.md`).
+5. Prueba la compra con un usuario de prueba (Sandbox en Apple, cuenta de pruebas de licencias en Google). En pruebas, el «mes» dura unos minutos.
+
+La pantalla de Premium ya cumple lo que piden las tiendas para suscripciones: muestra el precio de la tienda, el mes gratis solo si esa cuenta puede tenerlo, la renovación automática, cómo cancelar, «Restaurar compras» y enlaces a los términos y a la privacidad.
+
+## Configurar el asistente
+
+Publica el servidor siguiendo `server/README.md` y pon su dirección en `AI_URL`, arriba de `src/build.py`. Luego `npm run sync`. Mientras `AI_URL` esté vacío, la app dice que el asistente aún no está disponible.
 
 ## Publicar en Google Play
 
@@ -51,7 +72,7 @@ En Android Studio, el botón ▶ instala la app en el emulador o en tu móvil (c
 2. En [Play Console](https://play.google.com/console), crea la app, sube el `.aab` y rellena la ficha (textos de abajo).
 3. **Cuentas personales nuevas**: Google exige una prueba cerrada con al menos 12 personas durante 14 días seguidos antes de poder publicar en producción. Invita a amigos o familia como testers.
 4. Formularios que te pedirá:
-   - *Seguridad de los datos*: la app **no recoge ni comparte datos**. Todo se queda en el móvil.
+   - *Seguridad de los datos*: el plan se queda en el móvil, pero con el asistente salen datos. Declara como **recogidos** (no compartidos: los tratan proveedores en tu nombre), opcionales, para *funcionalidad de la app*, cifrados en tránsito y sin guardar en tu servidor: *Información financiera* (las cifras del plan, solo si la persona activa «Usar mi plan»), *Mensajes en la app* u *otro contenido generado por el usuario* (las preguntas) e *Historial de compras* (estado de la suscripción, vía RevenueCat). Revisa las definiciones de Google al rellenarlo.
    - *Funciones financieras*: DebtOut es una herramienta de presupuesto personal; no ofrece préstamos, cuentas, pagos ni inversiones.
    - *Clasificación de contenido*: sin contenido sensible.
    - *Público objetivo*: mayores de 14 años, como dicen los términos.
@@ -61,11 +82,11 @@ En Android Studio, el botón ▶ instala la app en el emulador o en tu móvil (c
 
 1. En Xcode: elige *Any iOS Device*, luego *Product > Archive* y *Distribute App > App Store Connect*.
 2. En [App Store Connect](https://appstoreconnect.apple.com), crea la app con el mismo identificador y rellena la ficha.
-3. *Privacidad de la app*: **No se recopilan datos**.
+3. *Privacidad de la app*: declara *Información financiera* (cifras del plan, opcional), *Contenido del usuario* (preguntas al asistente) y *Compras* (estado de la suscripción), todo para *funcionalidad de la app*, **no vinculado** a la identidad de la persona y sin rastreo. Añade en la descripción o en los metadatos los enlaces a los términos (`https://tu-dominio/terminos/`) y a la privacidad, que Apple exige en apps con suscripción.
 4. La app ya declara que no usa cifrado propio (`ITSAppUsesNonExemptEncryption`), así que Apple no preguntará por la exportación en cada versión.
 5. Prueba antes con TestFlight: Apple la revisa en uno o dos días.
 
-Apple rechaza las apps que son solo una web metida en una caja (norma 4.2). DebtOut funciona sin conexión y usa notificaciones, compartir y vibración nativas, lo que ayuda; si te lo plantean en la revisión, explícalo en la respuesta.
+Apple rechaza las apps que son solo una web metida en una caja (norma 4.2). DebtOut funciona sin conexión y usa notificaciones, compartir, vibración y compras nativas, lo que ayuda; si te lo plantean en la revisión, explícalo en la respuesta. Para la revisión, Apple necesitará probar Premium: lo hará con su cuenta de Sandbox.
 
 ## Textos para las fichas
 
@@ -77,7 +98,7 @@ Apple rechaza las apps que son solo una web metida en una caja (norma 4.2). Debt
 
 **Palabras clave de App Store** (máx. 100): deudas,presupuesto,ahorro,sueldo,préstamo,tarjeta,hipoteca,finanzas,pagos,metas
 
-**Texto promocional** (máx. 170): Gratis durante la beta, con todo incluido. Convierte tu sueldo en un plan: qué pagar, qué guardar y cuánto te queda libre. Sin cuenta y sin conectar tu banco.
+**Texto promocional** (máx. 170): Prueba Premium 1 mes gratis. Convierte tu sueldo en un plan y pregunta tus dudas al asistente con IA. Sin cuenta y sin conectar tu banco.
 
 **Descripción**:
 
@@ -95,16 +116,18 @@ Apple rechaza las apps que son solo una web metida en una caja (norma 4.2). Debt
 > • Calendario de pagos del mes, con avisos el día de cada pago.
 > • Metas de ahorro: fondo de emergencia, un viaje, una mudanza.
 > • Copias de seguridad para cambiar de móvil sin perder tu plan.
+> • Asistente con IA: pregúntale qué deuda pagar antes, qué es la TAE o qué hacer si no llegas a fin de mes. Si quieres, responde con los números de tu plan.
 >
 > TUS DATOS SON TUYOS
-> DebtOut no conecta con tu banco, no te pide cuenta ni contraseña y no envía tu plan a ningún servidor: se guarda solo en tu móvil. Sin anuncios, sin rastreadores.
+> DebtOut no conecta con tu banco, no te pide cuenta ni contraseña y tu plan se guarda solo en tu móvil. Solo si tú lo activas, el asistente usa tus cifras (nunca tu nombre) para responderte. Sin anuncios, sin rastreadores.
 >
-> Gratis durante la beta, con todas las funciones. DebtOut es una herramienta de planificación: sus cálculos son orientativos y no son asesoramiento financiero.
+> GRATIS O PREMIUM
+> Úsala gratis con 1 deuda y 1 meta. Premium incluye deudas y metas ilimitadas, avisos de pago y el asistente con IA: 1 mes gratis y después 0,99 € al mes. La suscripción se renueva cada mes hasta que la canceles en los ajustes de tu cuenta, al menos 24 horas antes de la renovación.
+>
+> Términos: https://tu-dominio/terminos/ · Privacidad: https://tu-dominio/privacidad/
+>
+> DebtOut es una herramienta de planificación: sus cálculos y las respuestas del asistente son orientativos y no son asesoramiento financiero.
 
 **Categoría**: Finanzas.
 
 **Capturas**: `python3 src/make_screens.py` genera capturas de la app con datos de ejemplo en `web/screenshots` y `web/img`. Las tiendas piden tamaños concretos (por ejemplo 1320 × 2868 para iPhone de 6,9" y entre 320 y 3840 px para Android); la forma más fiel es hacerlas en el simulador de Xcode y en el emulador de Android Studio.
-
-## Si más adelante se cobra Premium
-
-Dentro de una app de las tiendas, una suscripción como Premium tiene que cobrarse con la compra integrada de Apple y de Google (se quedan un 15 % en el programa para pequeños desarrolladores). Habrá que añadir un plugin de compras y adaptar los textos legales cuando llegue el momento.

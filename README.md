@@ -10,7 +10,8 @@ DebtOut tiene tres caras, hechas con el mismo código:
 | --- | --- | --- |
 | **Web promocional** | `/` (`web/index.html`) | Presenta la app: cómo funciona, calculadora de intereses, privacidad, precio y preguntas frecuentes. Incluye las páginas legales `/aviso-legal/`, `/privacidad/`, `/cookies/` y `/terminos/`. |
 | **App web** | `/app/` (`web/app/`) | La app, instalable desde el navegador y con funcionamiento sin conexión. Quien la instaló antes de que existiera la web sigue entrando directo a la app. |
-| **App para iPhone y Android** | `mobile/` | La misma app empaquetada con Capacitor para App Store y Google Play, con notificaciones de pago reales. Ver [`mobile/README.md`](mobile/README.md). |
+| **App para iPhone y Android** | `mobile/` | La misma app empaquetada con Capacitor para App Store y Google Play, con notificaciones de pago reales, Premium por suscripción (1 mes gratis y después 0,99 € al mes) y el asistente con IA. Ver [`mobile/README.md`](mobile/README.md). |
+| **Servidor del asistente** | `server/` | Pequeño servidor en Cloudflare Workers entre la app y la IA (Claude): comprueba la suscripción y limita las preguntas. Su base de conocimiento está en `server/conocimiento/`. Ver [`server/README.md`](server/README.md). |
 
 ## Qué hay en el repositorio
 
@@ -18,6 +19,7 @@ DebtOut tiene tres caras, hechas con el mismo código:
 | --- | --- |
 | `web/` | Web y app web listas para publicar en cualquier alojamiento de webs estáticas, tal cual. |
 | `mobile/` | Proyecto de Capacitor: `native/bridge.js` (puente con el móvil), `android/` y `ios/` (proyectos nativos). `mobile/www` se genera y no se sube. |
+| `server/` | Servidor del asistente de IA (Cloudflare Workers) y su base de conocimiento. |
 | `src/` | El código fuente y los scripts que generan `web/` y `mobile/www`. No se publica. |
 
 Archivos de `src/`:
@@ -25,7 +27,11 @@ Archivos de `src/`:
 - `app.html`: la app (pantallas, estilos y lógica). Se usa en la web y en el móvil.
 - `landing.html`: la página de inicio de la web.
 - `legal_beta.html`: textos legales, compartidos por la app y la web.
-- `build.py`: genera todo. Arriba tiene tres ajustes: `SITE_URL` (la dirección pública de la web; con ella se añaden enlaces canónicos, imágenes absolutas para las vistas previas en WhatsApp o redes y `sitemap.xml`) y `APP_STORE_URL` / `PLAY_STORE_URL` (cuando la app esté en las tiendas, la web enlaza a ellas en vez de decir «Próximamente»).
+- `build.py`: genera todo. Arriba tiene los ajustes:
+  - `SITE_URL`: la dirección pública de la web. Con ella se añaden enlaces canónicos, imágenes absolutas para las vistas previas en WhatsApp o redes y `sitemap.xml`.
+  - `APP_STORE_URL` / `PLAY_STORE_URL`: cuando la app esté en las tiendas, la web enlaza a ellas en vez de decir «Próximamente».
+  - `WEB_BETA_END`: fecha de fin de la beta gratuita de la web. Mientras esté vacía, la beta sigue. Con una fecha, la web la anuncia y, desde ese día, queda con el plan gratis (1 deuda y 1 meta). Los términos prometen avisar antes, así que ponla con al menos un mes de margen.
+  - `REVENUECAT_IOS_KEY` / `REVENUECAT_ANDROID_KEY` y `AI_URL`: claves de la suscripción y dirección del servidor del asistente. Ver `mobile/README.md` y `server/README.md`.
 
 Archivos de `web/` que conviene conocer:
 

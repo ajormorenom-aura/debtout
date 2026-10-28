@@ -32,8 +32,11 @@ SEED = {"v": 3, "stage": "app", "name": "Ana", "salary": 1850, "freq": "mensual"
 
 # A pretend phone: what mobile/native/bridge.js gives the app inside Capacitor, recording every call.
 FAKE_PHONE = """
-window.__nat = { calls: [], store: {}, perm: 'prompt', last: null, back: null };
+window.__nat = { calls: [], store: {}, perm: 'prompt', last: null, back: null, sub: __SUB__, offer: __OFFER__ };
 (function (plan) { if (plan) window.__nat.store['debtout.app.v3'] = plan; })(__PLAN__);
+/* build.py leaves the assistant address empty until the server is published; the tests point it at a fake one. */
+(function () { var v = {}; Object.defineProperty(window, 'DEBTOUT_CONFIG', { configurable: true, get: function () { return v; },
+  set: function (n) { v = Object.assign({}, n, { aiUrl: 'https://asistente.test' }); } }); })();
 window.DebtOutNative = {
   platform: 'android',
   storage: {
@@ -49,11 +52,41 @@ window.DebtOutNative = {
     replace: function (list) { window.__nat.last = list.map(function (n) { return { title: n.title, at: +n.at }; }); window.__nat.calls.push(['replace', list.length]); return Promise.resolve(); },
     clear: function () { window.__nat.calls.push(['clear']); return Promise.resolve(); }
   },
+  purchases: {
+    available: true,
+    status: function () { return Promise.resolve(window.__nat.sub); },
+    offer: function () { return Promise.resolve(window.__nat.offer); },
+    buy: function () {
+      window.__nat.calls.push(['buy']);
+      window.__nat.sub = { active: true, trial: !!(window.__nat.offer && window.__nat.offer.trial), until: new Date(Date.now() + 30 * 864e5).toISOString(), willRenew: true, manageUrl: null };
+      return Promise.resolve(window.__nat.sub);
+    },
+    restore: function () { window.__nat.calls.push(['restore']); return Promise.resolve(window.__nat.sub); },
+    userId: function () { return Promise.resolve('$RCAnonymousID:0123456789abcdef0123456789abcdef'); },
+    manage: function (u) { window.__nat.calls.push(['manage', u]); },
+    onChange: function (cb) { window.__nat.subChange = cb; }
+  },
   onBack: function (h) { window.__nat.back = h; },
   onResume: function (h) { window.__nat.resume = h; },
   ready: function () { window.__nat.calls.push(['ready']); }
 };
 """
+
+
+PREMIUM = {"active": True, "trial": False, "until": "2027-01-01T00:00:00Z", "willRenew": True, "manageUrl": None}
+FREE = {"active": False, "trial": False, "until": None, "willRenew": False, "manageUrl": None}
+OFFER = {"price": "0,99 €", "trial": True, "trialPeriod": "P1M"}
+
+
+def fake_phone(plan, sub=PREMIUM, offer=OFFER):
+    """plan: the plan already in native storage (dict) or None."""
+    return (FAKE_PHONE.replace("__PLAN__", json.dumps(json.dumps(plan)) if plan else "null")
+            .replace("__SUB__", json.dumps(sub)).replace("__OFFER__", json.dumps(offer)))
+
+
+def html_route(body):
+    """Route handler that answers with this HTML (one parameter: Playwright passes the request too if asked)."""
+    return lambda route: route.fulfill(status=200, content_type="text/html; charset=utf-8", body=body)
 
 
 def payoff(bal, apr, pay):
@@ -164,7 +197,7 @@ with sync_playwright() as p:
         act(pg, "accept")
         s = state(pg)
         check("salary after accepting", screen_h1(pg) == "¿Cuánto cobras?", screen_h1(pg))
-        check("acceptance stored", s and s["accepted"] and s["accepted"]["v"] == "2026-10-22" and s["name"] == "Ana López", s and (s.get("accepted"), s.get("name")))
+        check("acceptance stored", s and s["accepted"] and s["accepted"]["v"] == "2026-10-28" and s["name"] == "Ana López", s and (s.get("accepted"), s.get("name")))
         act(pg, "back")
         check("back from salary goes to start", screen_h1(pg) == "Antes de empezar")
         act(pg, "accept")
@@ -255,9 +288,9 @@ with sync_playwright() as p:
         # ---- legal ----
         act(pg, "tab", "settings")
         for doc, must, mustnot in [("aviso", ["Versión beta", "Inter"], ["Unbounded", "Manrope"]),
-                                   ("privacidad", ["Netlify, Inc.", "Marco de Privacidad"], ["Google Fonts", "contraseña (guardada", "Stripe", "Invita"]),
+                                   ("privacidad", ["Netlify, Inc.", "Marco de Privacidad", "Anthropic", "Usar mi plan", "Nunca tu nombre", "no las usa para entrenar"], ["Google Fonts", "contraseña (guardada", "Stripe", "Invita"]),
                                    ("cookies", ["debtout.app.v3", "debtout-app-"], ["Google Fonts"]),
-                                   ("terminos", ["Beta gratuita", "Premium en el futuro"], ["Invita a un amigo", "0,99 € al mes, IVA incluido. Es el precio final"])]:
+                                   ("terminos", ["Beta gratuita", "DebtOut Premium en la app", "1 mes gratis", "una sola vez por cuenta", "24 horas antes", "Asistente de IA"], ["Invita a un amigo", "0,99 € al mes, IVA incluido. Es el precio final", "2 meses"])]:
             act(pg, "legal", doc, wait=600)
             lt = pg.locator(".sheet .legal").inner_text()
             check(f"legal {doc} content", all(m in lt for m in must) and not any(m in lt for m in mustnot), [m for m in must if m not in lt] + [m for m in mustnot if m in lt])
@@ -507,7 +540,7 @@ with sync_playwright() as p:
         idx = open(os.path.join(www, "index.html"), encoding="utf-8").read()
         check("phone build: native bridge, no manifest", '<script src="native.js"></script>' in idx and "manifest" not in idx and os.path.getsize(os.path.join(www, "native.js")) > 5000)
         ctx8, pg8 = new_page(b, dict(MOBILE, service_workers="allow"), errs, reqs)
-        pg8.add_init_script(FAKE_PHONE.replace("__PLAN__", json.dumps(json.dumps(dict(SEED, name="Nativa")))))
+        pg8.add_init_script(fake_phone(dict(SEED, name="Nativa")))
         pg8.goto(NATIVE_BASE)
         pg8.wait_for_timeout(1000)
         nat = lambda: pg8.evaluate("window.__nat.calls")
@@ -554,18 +587,149 @@ with sync_playwright() as p:
         ctx8.close()
         # a plan made before the native copy existed is copied into native storage
         ctx8, pg8 = new_page(b, MOBILE, errs, reqs)
-        pg8.add_init_script(FAKE_PHONE.replace("__PLAN__", "null") + ";localStorage.setItem('debtout.app.v3', JSON.stringify(" + json.dumps(SEED) + "))")
+        pg8.add_init_script(fake_phone(None) + ";localStorage.setItem('debtout.app.v3', JSON.stringify(" + json.dumps(SEED) + "))")
         pg8.goto(NATIVE_BASE)
         pg8.wait_for_timeout(1000)
         check("phone: existing plan copied to native storage", pg8.evaluate("JSON.parse(window.__nat.store['debtout.app.v3'] || '{}').name") == "Ana")
         ctx8.close()
+
+        # ---- phone without Premium: free plan, locks and the free month ----
+        ctx9, pg9 = new_page(b, MOBILE, errs, reqs)
+        pg9.add_init_script(fake_phone(SEED, sub=FREE))
+        pg9.goto(NATIVE_BASE)
+        pg9.wait_for_timeout(1000)
+        nat9 = lambda: pg9.evaluate("window.__nat.calls")
+        check("free phone: Inicio offers Premium", "Hazte Premium" in pg9.locator(".promo").inner_text() and "Beta" not in pg9.locator(".view").inner_text())
+        act(pg9, "toAssistant", wait=500)
+        check("free phone: the assistant is locked", "El asistente es Premium" in pg9.locator(".sheet-panel").inner_text())
+        close_sheet(pg9)
+        act(pg9, "tab", "pay", wait=500)
+        act(pg9, "remToggle", wait=500)
+        check("free phone: reminders are locked", pg9.locator('[data-act="gateYes"]').count() == 1 and state(pg9).get("reminders") is not True)
+        close_sheet(pg9)
+        act(pg9, "tab", "debts", wait=500)
+        act(pg9, "debtAdd", wait=500)
+        check("free phone: a second debt is locked", "Más de una deuda es Premium" in pg9.locator(".sheet-panel").inner_text())
+        act(pg9, "gateYes", scope=".sheet-panel ", wait=1000)
+        prem = pg9.locator(".view").inner_text()
+        check("free phone: Premium screen shows the free month and the price", "1 mes gratis de Premium" in prem and "Después, 0,99 € al mes" in prem
+              and "Empezar mi mes gratis" in prem and "solo para quien no lo ha disfrutado antes" in prem and "se renueva cada mes por 0,99 €" in prem and "24 horas" in prem, prem)
+        act(pg9, "subBuy", wait=1200)
+        check("free phone: starting the free month unlocks Premium", ["buy"] in nat9() and pg9.locator(".toast").inner_text().startswith("¡Listo! Tu mes gratis")
+              and screen_h1(pg9) != "1 mes gratis de Premium", pg9.locator(".toast").inner_text())
+        act(pg9, "tab", "settings", wait=500)
+        txt = pg9.locator(".view").inner_text()
+        check("free phone: settings show the free month", "Mes gratis" in txt and "mes gratis hasta el" in txt and "DebtOut " + VERSION in txt and "beta " + VERSION not in txt, txt)
+        act(pg9, "toPremium", wait=700)
+        act(pg9, "subManage", wait=300)
+        check("free phone: manage subscription opens the store", any(c[0] == "manage" for c in nat9()))
+        ctx9.close()
+
+        # someone who already used the free month: the store offers no trial and nothing to restore
+        ctx9, pg9 = new_page(b, MOBILE, errs, reqs)
+        pg9.add_init_script(fake_phone(SEED, sub=FREE, offer=dict(OFFER, trial=False)))
+        pg9.goto(NATIVE_BASE)
+        pg9.wait_for_timeout(1000)
+        act(pg9, "tab", "settings", wait=500)
+        act(pg9, "toPremium", wait=900)
+        prem = pg9.locator(".view").inner_text()
+        check("no second free month: the price is shown without a trial", "Suscribirme por 0,99 € al mes" in prem and "gratis de Premium" not in prem and "solo para quien" not in prem, prem)
+        act(pg9, "subRestore", wait=600)
+        check("restoring without a subscription says so", "No hay ninguna suscripción activa" in pg9.locator(".toast").inner_text())
+        ctx9.close()
+
+        # ---- phone with Premium: the assistant ----
+        errs_ai = []  # this scenario fails requests on purpose (limit, no connection)
+        ctx10, pg10 = new_page(b, MOBILE, errs_ai, reqs)
+        pg10.add_init_script(fake_phone(dict(SEED, name="Nativa")))
+        sent, replies = [], []
+        def fake_ai(route):
+            sent.append(json.loads(route.request.post_data))
+            status, body = replies.pop(0) if replies else (200, {"respuesta": "Vale.", "quedan": 20, "limite": 30})
+            if status == "abort":
+                return route.abort()
+            route.fulfill(status=status, content_type="application/json", body=json.dumps(body),
+                          headers={"Access-Control-Allow-Origin": "*"})
+        pg10.route("https://asistente.test/**", fake_ai)
+        pg10.goto(NATIVE_BASE)
+        pg10.wait_for_timeout(1000)
+        check("assistant: Inicio invites Premium users to ask", "Pregunta a tu asistente" in pg10.locator(".promo").inner_text())
+        act(pg10, "toAssistant", wait=700)
+        check("assistant: screen with suggestions and the AI notice", screen_h1(pg10) == "Pregúntame lo que quieras" and pg10.locator('[data-act="aiSuggest"]').count() >= 6
+              and "generadas por IA" in pg10.locator("#ai-left").inner_text())
+        replies.append((200, {"respuesta": "**Primero** la tarjeta:\n- Paga el mínimo de todas\n- El resto, a la de mayor TAE\n<img src=x onerror=window.__xss=1>", "quedan": 29, "limite": 30}))
+        act(pg10, "aiSuggest", "¿Qué deuda pago primero?", wait=900)
+        req = sent[-1] if sent else {}
+        check("assistant: sends the question with the purchase id and no plan", req.get("usuario", "").startswith("$RCAnonymousID:") and req.get("mensajes") == [{"rol": "usuario", "texto": "¿Qué deuda pago primero?"}]
+              and "plan" not in req, req)
+        bubble = pg10.locator(".msg.ai").last
+        check("assistant: answer shown with bold and a list, safely", bubble.locator("b").count() == 1 and bubble.locator("li").count() == 2
+              and pg10.evaluate("window.__xss === undefined") and bubble.locator("img").count() == 0 and "<img" in bubble.inner_text())
+        check("assistant: questions left this month", "Te quedan 29 preguntas" in pg10.locator("#ai-left").inner_text())
+        act(pg10, "aiPlanToggle", wait=500)
+        check("assistant: sharing the plan asks first", "¿Usar tu plan?" in pg10.locator(".sheet-panel").inner_text() and "Tu nombre no se envía" in pg10.locator(".sheet-panel").inner_text())
+        act(pg10, "aiPlanYes", scope=".sheet-panel ", wait=600)
+        pg10.fill("#ai-q", "¿Cuándo termino?")
+        act(pg10, "aiSend", wait=900)
+        req = sent[-1]
+        plan = req.get("plan") or {}
+        check("assistant: with consent the plan goes along, without the name", plan.get("deudas") and plan["deudas"][0]["pendiente"] == 3200 and plan.get("sueldo_neto_al_mes") == 1850
+              and "Nativa" not in json.dumps(req) and len(req["mensajes"]) == 3 and req["mensajes"][1]["rol"] == "asistente" and state(pg10)["aiPlan"] is True, json.dumps(req)[:300])
+        replies.append((429, {"error": "limit", "limite": 30, "renueva": "2026-11-01"}))
+        pg10.fill("#ai-q", "Otra")
+        act(pg10, "aiSend", wait=800)
+        check("assistant: monthly limit explained", "Has usado tus 30 preguntas" in pg10.locator(".msg.err").last.inner_text() and "1 de noviembre" in pg10.locator(".msg.err").last.inner_text())
+        pg10.evaluate("window.__debtout.ui.chatLeft = null")
+        replies.append(("abort", None))
+        pg10.fill("#ai-q", "¿Y si no hay red?")
+        act(pg10, "aiSend", wait=800)
+        check("assistant: no connection, with a retry button", "No hay conexión" in pg10.locator(".msg.err").last.inner_text() and pg10.locator('[data-act="aiRetry"]').count() == 1)
+        act(pg10, "aiRetry", wait=800)
+        check("assistant: retry sends the question again", sent[-1]["mensajes"][-1]["texto"] == "¿Y si no hay red?" and pg10.locator(".msg.ai").last.inner_text() == "Vale.")
+        pg10.evaluate("window.__nat.back()")
+        pg10.wait_for_timeout(600)
+        check("assistant: back button returns to Inicio", pg10.locator(".hello-name").count() == 1)
+        check("assistant: no script errors", not [e for e in errs_ai if e.startswith("pageerror")], errs_ai)
+        ctx10.close()
+
+        # ---- web: the assistant is in the phone app; the beta can end on a date ----
+        ctx11, pg11 = new_page(b, dict(MOBILE, service_workers="block"), errs, reqs)
+        pg11.add_init_script("localStorage.setItem('debtout.app.v3', JSON.stringify(" + json.dumps(SEED) + "))")
+        pg11.goto(BASE)
+        pg11.wait_for_timeout(1300)
+        act(pg11, "tab", "settings", wait=500)
+        act(pg11, "toAssistant", wait=500)
+        sheet = pg11.locator(".sheet-panel").inner_text()
+        check("web: the assistant points to the phone app", "El asistente es Premium" in sheet and "app para iPhone y Android" in sheet)
+        ctx11.close()
+        page = open(os.path.join(ROOT, "web", "app", "index.html"), encoding="utf-8").read()
+        assert page.count('var BETA_END = "";') == 1
+        for when, future in [((now + datetime.timedelta(days=40)).strftime("%Y-%m-%d"), True), ((now - datetime.timedelta(days=1)).strftime("%Y-%m-%d"), False)]:
+            ctx11, pg11 = new_page(b, dict(MOBILE, service_workers="block"), errs, reqs)
+            pg11.add_init_script("localStorage.setItem('debtout.app.v3', JSON.stringify(" + json.dumps(SEED) + "))")
+            body = page.replace('var BETA_END = "";', f'var BETA_END = "{when}";')
+            pg11.route(BASE, html_route(body))
+            pg11.goto(BASE)
+            pg11.wait_for_timeout(1300)
+            if future:
+                check("web beta with an end date: announced on Inicio", "Todo gratis hasta el" in pg11.locator(".promo").inner_text())
+                act(pg11, "toPremium", wait=600)
+                check("web beta with an end date: explained on the plan screen", "La beta de la web termina el" in pg11.locator(".view").inner_text())
+            else:
+                act(pg11, "tab", "debts", wait=500)
+                act(pg11, "debtAdd", wait=500)
+                check("web after the beta: free plan with 1 debt", "Más de una deuda es Premium" in pg11.locator(".sheet-panel").inner_text())
+                act(pg11, "gateYes", scope=".sheet-panel ", wait=800)
+                check("web after the beta: Premium is in the app", screen_h1(pg11) == "Plan gratis" and "0,99 €" in pg11.locator(".view").inner_text())
+            ctx11.close()
     except Exception:
         traceback.print_exc()
         check("test run finished without exceptions", False)
     b.close()
 mobile_server.terminate()
 
-external = sorted(set(u for u in reqs if not (u.startswith(SITE) or u.startswith(NATIVE_BASE) or u.startswith("data:") or u.startswith("blob:"))))
+AI_TEST = "https://asistente.test/"  # the phone app's own assistant server (faked in the tests)
+external = sorted(set(u for u in reqs if not (u.startswith(SITE) or u.startswith(NATIVE_BASE) or u.startswith(AI_TEST) or u.startswith("data:") or u.startswith("blob:"))))
 check("no requests to third parties", not external, external)
 check("no page or console errors", not [e for e in errs if "404" not in e and "no-existe" not in e], errs)
 

@@ -1,0 +1,26 @@
+# Servidor del asistente de IA de DebtOut. Pasos para publicarlo: README.md de esta carpeta.
+name = "debtout-asistente"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[vars]
+# Modelo de Claude y esfuerzo (low = respuestas rápidas y baratas, suficiente para un chat).
+AI_MODEL = "claude-opus-5-5"
+AI_EFFORT = "low"
+# Preguntas al mes por persona suscrita.
+MONTHLY_LIMIT = "30"
+# Nombre del entitlement de Premium en RevenueCat.
+ENTITLEMENT = "premium"
+# Orígenes de la app nativa: iPhone (capacitor://localhost) y Android (https://localhost).
+ALLOWED_ORIGINS = "capacitor://localhost,https://localhost"
+
+# Contador de preguntas al mes. Crea el espacio con `npx wrangler kv namespace create USAGE` y pega aquí su id.
+[[kv_namespaces]]
+binding = "USAGE"
+id = "PEGA_AQUI_EL_ID_DEL_KV"
+
+# La base de conocimiento (conocimiento/*.md) va dentro del servidor como texto.
+[[rules]]
+type = "Text"
+globs = ["**/*.md"]
+fallthrough = true

@@ -216,6 +216,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border:0;border-radiu
 .tag.muted{color:var(--muted);background:var(--raise)}
 .amt{font-family:var(--display);font-size:46px;font-weight:700;letter-spacing:-.03em;line-height:1}
 .amt span{font-size:16px;color:var(--muted);font-weight:500;letter-spacing:0;margin-left:6px}
+.amt .then{display:block;margin:10px 0 0}
 .checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;color:var(--muted);font-size:15px}
 .checks li{display:flex;gap:10px;align-items:flex-start}
 .checks .ic{width:18px;height:18px;color:var(--green);margin-top:3px}
@@ -288,6 +289,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border:0;border-radiu
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 1.9 5.6L19.5 10.5 13.9 12.4 12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/><path d="M19 3v4M17 5h4"/></symbol>
   <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.6L3 21l1.9-5.4A8.5 8.5 0 1 1 21 11.5z"/><path d="M8.5 11.5h.01M12.5 11.5h.01M16.5 11.5h.01"/></symbol>
   <symbol id="i-bank" viewBox="0 0 24 24"><path d="M3 10 12 4l9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18"/><path d="M4 4l16 16"/></symbol>
 </svg>
 <a class="skip" href="#main">Saltar al contenido</a>
@@ -304,7 +306,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border:0;border-radiu
   <section class="hero" aria-labelledby="hero-title">
     <div class="wrap hero-grid">
       <div>
-        <span class="pill"><b>BETA</b> Gratis y con todo incluido</span>
+        <span class="pill"><b>MUY PRONTO</b> Asistente con IA en la app</span>
         <h1 class="h1" id="hero-title">Adiós a las deudas. <em>Hola al futuro.</em></h1>
         <p class="lead">DebtOut convierte tu sueldo en un plan para cada mes: qué pagar, qué guardar y cuánto te queda libre. Y te dice en qué mes terminarás de pagar tus deudas.</p>
         <div class="cta-row">
@@ -329,7 +331,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border:0;border-radiu
         </div>
         <div class="float f1" aria-hidden="true"><span class="dot"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-flag"/></svg></span><span>Fecha de salida<small>El mes en que terminas</small></span></div>
         <div class="float f2" aria-hidden="true"><span class="dot"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-bell"/></svg></span><span>Avisos de pago<small>Nada se te pasa</small></span></div>
-        <div class="float f3" aria-hidden="true"><span class="dot"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-target"/></svg></span><span>Metas de ahorro<small>Tu colchón crece</small></span></div>
+        <div class="float f3" aria-hidden="true"><span class="dot"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-chat"/></svg></span><span>Asistente con IA<small>Resuelve tus dudas</small></span></div>
       </div>
     </div>
   </section>
@@ -403,8 +405,8 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border:0;border-radiu
         <div class="feat card rv"><span class="badge b-green"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-flag"/></svg></span><h3>Tu fecha de salida</h3><p>El mes en que terminas de pagar y cuánto te cuestan los intereses, comparado con pagar solo el mínimo.</p></div>
         <div class="feat card rv"><span class="badge b-coral"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-trend"/></svg></span><h3>Primero la más cara</h3><p>Pagas el mínimo de todas y el dinero extra va a la deuda con el interés más alto. Así pagas menos intereses.</p></div>
         <div class="feat card rv"><span class="badge b-cyan"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-split"/></svg></span><h3>Tu sueldo, repartido</h3><p>Gastos fijos, deudas, ahorro y dinero libre: ves a dónde va cada euro antes de que se vaya.</p></div>
-        <div class="feat card rv"><span class="badge b-amber"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-calendar"/></svg></span><h3>Calendario de pagos</h3><p>Todos los pagos del mes en orden de fecha. Márcalos al hacerlos y cierra el mes cuando cobres.</p></div>
-        <div class="feat card rv"><span class="badge b-coral"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-bell"/></svg></span><h3>Avisos de pago</h3><p>Te recordamos lo que vence en los próximos días para que no se te pase ningún pago ni pagues recargos.</p></div>
+        <div class="feat card rv"><span class="badge b-amber"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-calendar"/></svg></span><h3>Pagos y avisos</h3><p>Todos los pagos del mes en orden de fecha y, en la app, una notificación el día de cada uno para que no pagues recargos.</p></div>
+        <div class="feat card rv"><span class="badge b-cyan"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-chat"/></svg></span><h3>Asistente con IA</h3><p>Pregúntale qué deuda pagar antes, qué es la TAE o qué hacer si no llegas. Si quieres, responde con los números de tu plan.</p></div>
         <div class="feat card rv"><span class="badge b-green"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-target"/></svg></span><h3>Metas de ahorro</h3><p>Fondo de emergencia, un viaje, una mudanza. El ahorro de cada mes se reparte en orden y ves cuándo llegas.</p></div>
       </div>
       <div class="gallery">
@@ -422,7 +424,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border:0;border-radiu
         <div>
           <span class="shield"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-shield"/></svg></span>
           <h2 class="h2" id="priv-title">Tus números no salen de tu móvil</h2>
-          <p class="sub">Tu plan se guarda solo en tu dispositivo. DebtOut no lo recibe en ningún servidor y no puede verlo. <a href="privacidad/">Lee la política de privacidad</a>.</p>
+          <p class="sub">Tu plan se guarda solo en tu dispositivo. DebtOut no lo recibe en ningún servidor y no puede verlo. Solo si tú lo activas, el asistente usa tus cifras para responderte, y nunca tu nombre. <a href="privacidad/">Lee la política de privacidad</a>.</p>
         </div>
         <ul class="plist">
           <li><b><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-bank"/></svg>Sin conectar tu banco</b><span>No accede a tus cuentas, no guarda dinero y no hace pagos ni transferencias.</span></li>
@@ -439,30 +441,30 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border:0;border-radiu
     <div class="wrap">
       <div class="sec-head center rv">
         <span class="eyebrow">Precio</span>
-        <h2 class="h2" id="price-title">Gratis durante la beta</h2>
-        <p class="sub">Mientras dure la beta tienes todas las funciones sin pagar nada. No te pedimos tarjeta.</p>
+        <h2 class="h2" id="price-title">Empieza gratis</h2>
+        <p class="sub">En el navegador, DebtOut es gratis. En la app, Premium te da todo y empieza con un mes sin pagar nada.</p>
       </div>
       <div class="prices">
         <div class="price card feat-p rv">
-          <div class="price-n">Beta abierta <span class="tag">Ahora</span></div>
-          <div class="amt">0 €<span>todo incluido</span></div>
+          <div class="price-n">Web <span class="tag">Beta abierta</span></div>
+          <div class="amt">0 €<span>en el navegador</span></div>
           <ul class="checks">
-            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Deudas y metas ilimitadas</li>
-            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Avisos de pago</li>
-            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Copias de seguridad</li>
-            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Funciona sin conexión</li>
+            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Todo incluido mientras dure la beta</li>
+            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Después, gratis con 1 deuda y 1 meta</li>
+            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Copias de seguridad y sin conexión</li>
+            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Sin tarjeta ni datos de pago</li>
           </ul>
           <a class="btn btn-primary" href="app/" data-cta data-cta-long>Empieza gratis</a>
         </div>
         <div class="price card rv">
-          <div class="price-n">Después de la beta <span class="tag muted">Previsto</span></div>
-          <div class="amt">0,99 €<span>al mes, IVA incluido</span></div>
+          <div class="price-n">Premium en la app <span class="tag muted">Muy pronto</span></div>
+          <div class="amt">1 mes gratis<span class="then">y después 0,99 € al mes</span></div>
           <ul class="checks">
-            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Premium con todas las funciones</li>
-            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>2 meses de prueba gratis</li>
-            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Plan gratis con 1 deuda y 1 meta</li>
+            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Deudas y metas ilimitadas</li>
+            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Avisos de pago en el móvil</li>
+            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Asistente con IA</li>
           </ul>
-          <p>Solo pagarás si lo contratas tú. Te avisaremos en la app antes de que acabe la beta y publicaremos antes las condiciones completas.</p>
+          <p>IVA incluido. El mes gratis es una vez por cuenta de Apple o de Google. Se renueva cada mes y lo cancelas cuando quieras desde tu cuenta. Sin Premium, la app es gratis con 1 deuda y 1 meta.</p>
         </div>
       </div>
     </div>
@@ -477,11 +479,15 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border:0;border-radiu
       </div>
       <div class="faq rv">
         <details><summary>¿DebtOut es gratis?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
-          <div><p>Sí. Durante la beta es gratis y tiene todas las funciones, también las que más adelante serán Premium. No te pedimos tarjeta ni datos de pago.</p></div></details>
+          <div><p>En el navegador, sí: durante la beta tiene todas las funciones y no te pedimos tarjeta. En la app para iPhone y Android puedes usarla gratis con 1 deuda y 1 meta, o con Premium, que empieza con 1 mes gratis y después cuesta 0,99 € al mes.</p></div></details>
+        <details><summary>¿Cómo funciona el mes gratis?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+          <div><p>Al contratar Premium en la app por primera vez, el primer mes no pagas nada. Lo gestionan Apple y Google: es una vez por cuenta, aunque cambies de correo o reinstales la app.</p><p>Si no quieres seguir, cancélalo desde los ajustes de tu cuenta de Apple o Google al menos 24 horas antes de que acabe el mes y no se te cobrará.</p></div></details>
+        <details><summary>¿Qué hace el asistente con IA y qué ve de mí?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+          <div><p>Responde dudas sobre tus deudas, el ahorro o cómo usar DebtOut. Solo ve lo que le preguntas. Si activas «Usar mi plan», también recibe las cifras de tu plan para responderte con tus números, pero nunca tu nombre. DebtOut no guarda tus preguntas.</p><p>Sus respuestas las genera una IA: pueden equivocarse y no son asesoramiento financiero. Está incluido en Premium.</p></div></details>
         <details><summary>¿Tengo que conectar mi banco?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
           <div><p>No. DebtOut no se conecta a tus cuentas, no guarda dinero y no hace pagos. Tú escribes tu sueldo, tus gastos y tus deudas, y DebtOut hace las cuentas.</p></div></details>
         <details><summary>¿Dónde se guardan mis datos?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
-          <div><p>Solo en tu móvil o tu ordenador. No hay cuentas y DebtOut no recibe tu plan en ningún servidor, así que nadie más puede verlo.</p></div></details>
+          <div><p>Solo en tu móvil o tu ordenador. No hay cuentas y DebtOut no recibe tu plan en ningún servidor, así que nadie más puede verlo. La única excepción la decides tú: si activas que el asistente use tu plan, sus cifras se envían para responderte.</p></div></details>
         <details><summary>¿Qué pasa si cambio de móvil?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
           <div><p>En Ajustes, «Exportar mis datos» guarda una copia de tu plan en un archivo. En el móvil nuevo, «Restaurar una copia» lo recupera. Haz una copia de vez en cuando: si borras los datos del navegador o desinstalas la app, el plan se pierde.</p></div></details>
         <details><summary>¿Cómo calcula cuándo termino de pagar?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
@@ -489,7 +495,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border:0;border-radiu
         <details><summary>¿Es asesoramiento financiero?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
           <div><p>No. DebtOut es una herramienta para organizarte y hacer estimaciones con los datos que tú introduces. Antes de una decisión importante, confirma las cifras con tu banco o con un profesional.</p></div></details>
         <details><summary>¿Cuándo estará en App Store y Google Play?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
-          <div><p>Estamos preparando las versiones para iPhone y Android, con avisos de pago como notificaciones. Mientras tanto, abre la app en el navegador del móvil y añádela a tu pantalla de inicio: se abre a pantalla completa y funciona sin conexión.</p></div></details>
+          <div><p>Estamos preparando las versiones para iPhone y Android, con avisos de pago como notificaciones, el asistente con IA y Premium con 1 mes gratis. Mientras tanto, abre la app en el navegador del móvil y añádela a tu pantalla de inicio: se abre a pantalla completa y funciona sin conexión.</p></div></details>
         <details><summary>¿Funciona sin conexión?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
           <div><p>Sí. Después de abrirla una vez con internet, la app se abre y funciona aunque no tengas conexión.</p></div></details>
       </div>

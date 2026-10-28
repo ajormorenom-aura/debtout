@@ -35,6 +35,17 @@ SITE_URL = (os.environ.get("DEBTOUT_SITE_URL") or "").strip().rstrip("/")
 APP_STORE_URL = ""
 PLAY_STORE_URL = ""
 
+# End of the free beta on the web, as "YYYY-MM-DD" ("" = no date announced, the beta goes on). The terms promise
+# notice beforehand: set it at least a month ahead and publish; the web app shows the date until then. From that
+# day the web keeps the free plan (1 debt, 1 goal); Premium is in the phone app.
+WEB_BETA_END = ""
+
+# Phone app: Premium subscription (RevenueCat public SDK keys, see mobile/README.md) and the assistant server
+# (see server/README.md). While empty, the app says the subscription or the assistant isn't available yet.
+REVENUECAT_IOS_KEY = ""      # starts with appl_
+REVENUECAT_ANDROID_KEY = ""  # starts with goog_
+AI_URL = ""                  # for example https://debtout-asistente.your-account.workers.dev
+
 DESC = ("Reparte tu sueldo entre gastos fijos, deudas, ahorro y dinero libre, y mira cuándo "
         "terminarás de pagar tus deudas. Sin conectar tu banco. Gratis durante la beta.")
 TITLE = "DebtOut · Tu plan para salir de deudas"
@@ -45,6 +56,7 @@ THEME = "#070b08"
 
 FONTS = ["inter-400.v1.woff", "inter-600.v1.woff", "inter-700.v1.woff", "inter-800.v1.woff",
          "inter-display-600.v1.woff", "inter-display-700.v1.woff"]
+APP_ID = json.load(open(os.path.join(MOBILE, "capacitor.config.json"), encoding="utf-8"))["appId"] if os.path.exists(os.path.join(MOBILE, "capacitor.config.json")) else ""
 LEGAL_PAGES = [("aviso", "aviso-legal"), ("privacidad", "privacidad"), ("cookies", "cookies"), ("terminos", "terminos")]
 LEGAL_TITLES = {"aviso": "Aviso legal", "privacidad": "Política de privacidad", "cookies": "Política de cookies", "terminos": "Términos y condiciones"}
 
@@ -103,15 +115,21 @@ def build_app(prefix, native):
     app = swap(app, "/*LEGAL_START*/{}/*LEGAL_END*/", "/*LEGAL_START*/" + legal_json + "/*LEGAL_END*/")
     app = swap(app, '"__VERSION__"', json.dumps(VERSION))
     app = swap(app, "__SW_URL__", prefix + "sw.js")
+    app = swap(app, '"__BETA_END__"', json.dumps(WEB_BETA_END))
     app = swap(app, 'url("fonts/', f'url("{prefix}fonts/', count=len(FONTS))
     style_end = app.index("</style>") + len("</style>")
     style, body = app[:style_end].strip(), app[style_end:].strip()
     assert style.startswith("<style>") and "<script>" in body
 
+    config = {"appStore": APP_STORE_URL, "playStore": PLAY_STORE_URL}
     if native:
-        links = '<script src="native.js"></script>\n'
+        config.update({"appId": APP_ID, "revenuecatIos": REVENUECAT_IOS_KEY, "revenuecatAndroid": REVENUECAT_ANDROID_KEY,
+                       "entitlement": "premium", "aiUrl": AI_URL.rstrip("/")})
+    config_tag = "<script>window.DEBTOUT_CONFIG = " + json.dumps(config).replace("</", "<\\/") + ";</script>\n"
+    if native:
+        links = config_tag + '<script src="native.js"></script>\n'
     else:
-        links = (SECURITY_META + f'<link rel="manifest" href="{prefix}manifest.webmanifest">\n'
+        links = (SECURITY_META + config_tag + f'<link rel="manifest" href="{prefix}manifest.webmanifest">\n'
                  f'<link rel="icon" href="{prefix}icons/favicon.svg" type="image/svg+xml">\n'
                  f'<link rel="icon" href="{prefix}icons/favicon-32.png" sizes="32x32" type="image/png">\n'
                  f'<link rel="apple-touch-icon" href="{prefix}icons/apple-touch-icon.png">\n'
@@ -346,6 +364,8 @@ tokens = {
     "FOOTER": site_footer(""),
     "MARK_HERO": mark("hero"),
     "STORES": store_badge(APP_STORE_URL, "iPhone", PHONE_IC) + store_badge(PLAY_STORE_URL, "Android", PHONE_IC),
+    "PREMIUM_TAG": "En la app" if stores_live else "Muy pronto",
+    "HERO_PILL": "<b>NUEVO</b> Asistente con IA en la app" if stores_live else "<b>MUY PRONTO</b> Asistente con IA en la app",
     "STORES_NOTE": ("Descárgala gratis o úsala en el navegador." if stores_live
                     else "Muy pronto en App Store y Google Play. Mientras tanto, úsala gratis en el navegador del móvil o del ordenador e instálala desde allí."),
     "JSONLD": json.dumps({

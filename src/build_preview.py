@@ -31,6 +31,7 @@ def swap(s, old, new, count=1):
 app = swap(app, "/*LEGAL_START*/{}/*LEGAL_END*/", "/*LEGAL_START*/" + legal_json + "/*LEGAL_END*/")
 app = swap(app, '"__VERSION__"', json.dumps(VERSION + " · vista previa"))
 app = swap(app, "__SW_URL__", "sw.js")
+app = swap(app, '"__BETA_END__"', '""')
 
 # fonts as data URIs
 for name in sorted(os.listdir(FONTS)):
