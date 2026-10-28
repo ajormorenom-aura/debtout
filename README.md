@@ -21,6 +21,7 @@ DebtOut tiene tres caras, hechas con el mismo código:
 | `mobile/` | Proyecto de Capacitor: `native/bridge.js` (puente con el móvil), `android/` y `ios/` (proyectos nativos). `mobile/www` se genera y no se sube. |
 | `server/` | Servidor del asistente de IA (Cloudflare Workers) y su base de conocimiento. |
 | `src/` | El código fuente y los scripts que generan `web/` y `mobile/www`. No se publica. |
+| `venta/` | Material para vender el proyecto: el anuncio (`listing_pitch.md`), la guía de traspaso para el comprador (`TRANSFER_GUIDE.md`) y `crear_zip.py`, que genera `debtout-proyecto-venta.zip` sin dependencias, historial ni compilaciones (`python3 venta/crear_zip.py`). |
 
 Archivos de `src/`:
 
