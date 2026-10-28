@@ -509,8 +509,10 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
   var NATIVE = window.DebtOutNative && typeof window.DebtOutNative === "object" ? window.DebtOutNative : null;
   var CFG = window.DEBTOUT_CONFIG && typeof window.DEBTOUT_CONFIG === "object" ? window.DEBTOUT_CONFIG : {};
   /* The web is a free beta with everything included, until BETA_END if build.py sets one (then the free plan).
-     The phone app has no beta: Premium is a subscription (1 month free, then 0,99 € a month) bought in the app. */
+     The phone app has no beta: Premium is a subscription (1 month free, then PRICE a month) bought in the app. */
   var BETA_END = "__BETA_END__";
+  /* Monthly price of Premium for texts (build.py, PREMIUM_PRICE). The purchase screen shows the store's price. */
+  var PRICE = "__PREMIUM_PRICE__";
   var BETA = !NATIVE && (!BETA_END || isoDay() < BETA_END);
   /* Subscription status in the phone app, from the store (RevenueCat). */
   var sub = { known: false, active: false, trial: false, until: null, willRenew: false, manageUrl: null };
@@ -1024,7 +1026,7 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
       '<p class="lead">' + (NATIVE ? "Así funciona DebtOut:" : "DebtOut está en beta abierta. Así funciona:") + "</p>" +
       '<div class="text-list">' +
       "<p>" + ic("lock") + "<span>Sin cuenta ni contraseña. Tu plan se guarda solo en este dispositivo y DebtOut no lo recibe.</span></p>" +
-      "<p>" + ic("spark") + "<span>" + (NATIVE ? "Gratis con 1 deuda y 1 meta. Premium, con todo ilimitado, avisos y asistente con IA, cuesta 0,99 € al mes y empieza con 1 mes gratis. Solo pagas si lo contratas tú."
+      "<p>" + ic("spark") + "<span>" + (NATIVE ? "Gratis con 1 deuda y 1 meta. Premium, con todo ilimitado, avisos y asistente con IA, cuesta " + PRICE + " al mes y empieza con 1 mes gratis. Solo pagas si lo contratas tú."
         : BETA ? "Gratis durante la beta, con todo lo de Premium incluido. No te pedimos tarjeta." : "Gratis con 1 deuda y 1 meta. No te pedimos tarjeta.") + "</span></p>" +
       "<p>" + ic("download") + "<span>Haz una copia de vez en cuando desde Ajustes: si borras el navegador o cambias de móvil, el plan se pierde.</span></p>" +
       "</div>" +
@@ -1273,7 +1275,7 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
 
   /* Web: free beta (or the free plan once it ends); Premium lives in the phone app. */
   function premiumWeb() {
-    var app = "<p>" + ic("phone") + "<span>Premium, con el asistente de IA, está en la app para iPhone y Android: 1 mes gratis la primera vez y después 0,99 € al mes.</span></p>";
+    var app = "<p>" + ic("phone") + "<span>Premium, con el asistente de IA, está en la app para iPhone y Android: 1 mes gratis la primera vez y después " + PRICE + " al mes.</span></p>";
     if (BETA) {
       return '<section class="scr">' + topbar({ title: "Tu plan" }) +
         '<h1 class="h-lg">Beta abierta</h1>' +
@@ -1290,7 +1292,7 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
     return '<section class="scr">' + topbar({ title: "Tu plan" }) +
       '<h1 class="h-lg">Plan gratis</h1>' +
       '<p class="lead">En la web tienes 1 deuda y 1 meta, gratis.</p>' +
-      '<div class="plan feat"><div class="plan-head"><span class="plan-n">Premium <span class="tag plain">En la app</span></span><span><span class="price">0,99 €</span><span class="muted sm"> al mes</span></span></div>' + premiumFeats(true) + "</div>" +
+      '<div class="plan feat"><div class="plan-head"><span class="plan-n">Premium <span class="tag plain">En la app</span></span><span><span class="price">' + PRICE + '</span><span class="muted sm"> al mes</span></span></div>' + premiumFeats(true) + "</div>" +
       '<div class="text-list">' + app + "</div>" + storeLinks() +
       '<div class="links-row"><button class="link-btn" data-act="legal" data-val="terminos">Términos</button></div>' +
       '<div class="foot"><button class="btn btn-primary" data-act="back">Entendido</button></div></section>';

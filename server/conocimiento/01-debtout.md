@@ -40,7 +40,7 @@ DebtOut no tiene cuentas ni pide correo o contraseña. El plan no sale del dispo
 ## Premium y suscripción
 - Gratis: 1 deuda y 1 meta.
 - Premium: deudas y metas ilimitadas, avisos de pago y el asistente.
-- En la app de iPhone y Android, Premium cuesta 0,99 € al mes (IVA incluido; fuera de España la tienda puede mostrar otro precio) y empieza con 1 mes gratis. El mes gratis es solo la primera vez: Apple y Google lo controlan por cuenta, así que no se puede repetir con otro correo ni reinstalando.
+- En la app de iPhone y Android, Premium cuesta 2,99 € al mes (IVA incluido; fuera de España la tienda puede mostrar otro precio) y empieza con 1 mes gratis. El mes gratis es solo la primera vez: Apple y Google lo controlan por cuenta, así que no se puede repetir con otro correo ni reinstalando.
 - Se renueva cada mes hasta que se cancela. Para cancelar, al menos 24 horas antes de la renovación: en iPhone, Ajustes > tu nombre > Suscripciones > DebtOut; en Android, Google Play > foto de perfil > Pagos y suscripciones > Suscripciones. También desde DebtOut: Ajustes > Plan > «Gestionar suscripción». Al cancelar se sigue teniendo Premium hasta el final del periodo pagado.
 - Al cambiar de móvil (con la misma cuenta de Apple o Google): Ajustes > Plan > «Restaurar compras». Los datos del plan se pasan con una copia de seguridad.
 - Los cobros y reembolsos los gestiona Apple o Google.

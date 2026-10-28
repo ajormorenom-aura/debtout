@@ -8,7 +8,7 @@ Lo que la versión nativa añade a la web (código en `native/bridge.js`):
 - **Copia del plan en el almacenamiento nativo**, que el sistema no borra cuando falta espacio (iOS sí puede borrar el de una web).
 - **Copias de seguridad con el menú Compartir**: guardar en Archivos o Drive, o enviártela.
 - **Botón Atrás de Android**: cierra la hoja abierta, vuelve un paso o va a Inicio; en Inicio, sale.
-- **Premium por suscripción** (1 mes gratis y después 0,99 € al mes), cobrada por Apple y Google a través de [RevenueCat](https://www.revenuecat.com). El mes gratis lo controlan las tiendas: una vez por cuenta de Apple o de Google, aunque la persona cambie de correo o reinstale la app. No hace falta pedir correo ni crear cuentas.
+- **Premium por suscripción** (1 mes gratis y después 2,99 € al mes), cobrada por Apple y Google a través de [RevenueCat](https://www.revenuecat.com). El mes gratis lo controlan las tiendas: una vez por cuenta de Apple o de Google, aunque la persona cambie de correo o reinstale la app. No hace falta pedir correo ni crear cuentas.
 - **Asistente con IA** para Premium: responde dudas sobre deudas y sobre la app y, si la persona lo activa, usa su plan. Funciona a través del servidor de `server/` (ver su README).
 - Vibración al marcar pagos y cerrar el mes, pantalla de inicio y barra de estado con los colores de DebtOut.
 
@@ -50,13 +50,14 @@ En Android Studio, el botón ▶ instala la app en el emulador o en tu móvil (c
 5. **Configura la suscripción y el asistente** (apartados de abajo) y pon las claves en `src/build.py`.
 6. **Sube la versión** en cada envío: `versionCode` y `versionName` en `android/app/build.gradle`; *Version* y *Build* en Xcode. Cada subida a una tienda necesita un número de compilación mayor que el anterior.
 
-## Configurar la suscripción (1 mes gratis y 0,99 € al mes)
+## Configurar la suscripción (1 mes gratis y 2,99 € al mes)
 
 La app cobra Premium con las compras integradas de Apple y Google, que son obligatorias para suscripciones dentro de apps de las tiendas. RevenueCat (gratis hasta 2.500 $ de ingresos al mes) une las dos tiendas, dice a la app si la persona tiene Premium y se lo confirma al servidor del asistente.
 
-1. **App Store Connect** (tu app > Suscripciones): crea un grupo de suscripciones «DebtOut Premium» y dentro una suscripción mensual, por ejemplo `premium_mensual`, a 0,99 €. Añádele una **oferta introductoria gratuita de 1 mes**. Apple solo se la da a quien no la haya usado antes en ese grupo.
-2. **Play Console** (Monetizar > Suscripciones): crea la suscripción `premium_mensual` con un plan base mensual de 0,99 € y una **oferta de prueba gratuita de 1 mes** para clientes nuevos (que nunca hayan tenido esta suscripción). Google solo la ofrece a cuentas que puedan disfrutarla.
+1. **App Store Connect** (tu app > Suscripciones): crea un grupo de suscripciones «DebtOut Premium» y dentro una suscripción mensual, por ejemplo `premium_mensual`, a 2,99 €. Añádele una **oferta introductoria gratuita de 1 mes**. Apple solo se la da a quien no la haya usado antes en ese grupo.
+2. **Play Console** (Monetizar > Suscripciones): crea la suscripción `premium_mensual` con un plan base mensual de 2,99 € y una **oferta de prueba gratuita de 1 mes** para clientes nuevos (que nunca hayan tenido esta suscripción). Google solo la ofrece a cuentas que puedan disfrutarla.
 3. **RevenueCat**: crea un proyecto con una app de iOS y otra de Android (conectadas a App Store Connect y Play Console según sus instrucciones), un *entitlement* llamado `premium` con el producto `premium_mensual` de las dos tiendas y una *offering* `default` con un paquete mensual.
+   El precio de las tiendas tiene que coincidir con `PREMIUM_PRICE` en `src/build.py`, que es el que aparece en la web, en los términos y en los textos de la app.
 4. Copia las **claves públicas** de RevenueCat (`appl_…` y `goog_…`) en `REVENUECAT_IOS_KEY` y `REVENUECAT_ANDROID_KEY`, arriba de `src/build.py`, y la **clave secreta** (`sk_…`) al servidor del asistente (`server/README.md`).
 5. Prueba la compra con un usuario de prueba (Sandbox en Apple, cuenta de pruebas de licencias en Google). En pruebas, el «mes» dura unos minutos.
 
@@ -122,7 +123,7 @@ Apple rechaza las apps que son solo una web metida en una caja (norma 4.2). Debt
 > DebtOut no conecta con tu banco, no te pide cuenta ni contraseña y tu plan se guarda solo en tu móvil. Solo si tú lo activas, el asistente usa tus cifras (nunca tu nombre) para responderte. Sin anuncios, sin rastreadores.
 >
 > GRATIS O PREMIUM
-> Úsala gratis con 1 deuda y 1 meta. Premium incluye deudas y metas ilimitadas, avisos de pago y el asistente con IA: 1 mes gratis y después 0,99 € al mes. La suscripción se renueva cada mes hasta que la canceles en los ajustes de tu cuenta, al menos 24 horas antes de la renovación.
+> Úsala gratis con 1 deuda y 1 meta. Premium incluye deudas y metas ilimitadas, avisos de pago y el asistente con IA: 1 mes gratis y después 2,99 € al mes. La suscripción se renueva cada mes hasta que la canceles en los ajustes de tu cuenta, al menos 24 horas antes de la renovación.
 >
 > Términos: https://tu-dominio/terminos/ · Privacidad: https://tu-dominio/privacidad/
 >

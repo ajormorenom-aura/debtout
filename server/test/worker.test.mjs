@@ -3,7 +3,7 @@
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
 import { build } from "esbuild";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -58,7 +58,7 @@ function post(body, origin = "capacitor://localhost") {
 
 const ASK = { usuario: USER, mensajes: [{ rol: "usuario", texto: "¿Qué deuda pago primero?" }] };
 
-test("answers a Premium user's question with the cached knowledge and a refusal fallback", async () => {
+test("answers a Premium user's question with Haiku 5.5 and the cached knowledge", async () => {
   const net = network();
   const e = env();
   const res = await createHandler({ fetch: net.fetch, now: () => NOW }).fetch(post(ASK), e);
@@ -67,9 +67,9 @@ test("answers a Premium user's question with the cached knowledge and a refusal 
   const data = await res.json();
   assert.deepEqual(data, { respuesta: "Paga primero la tarjeta.", quedan: 2, limite: 3 });
   const call = net.calls.claude[0];
-  assert.equal(call.body.model, "claude-opus-5-5");
-  assert.equal(call.body.fallbacks, "default");
-  assert.match(call.beta, /server-side-fallback-2026-07-01/);
+  assert.equal(call.body.model, "claude-haiku-5-5");
+  assert.equal(call.body.fallbacks, undefined, "Haiku has no server-side fallback");
+  assert.ok(!String(call.beta || "").includes("server-side-fallback"));
   assert.deepEqual(call.body.output_config, { effort: "low" });
   assert.equal(call.body.system[0].cache_control.type, "ephemeral");
   assert.equal(call.body.system[0].text, SYSTEM_PROMPT);
@@ -128,13 +128,19 @@ test("a refused question gets a kind answer and does not use up the quota", asyn
   assert.equal(data.quedan, 3);
 });
 
-test("Haiku is called without the fallback parameter (it has no server-side fallback)", async () => {
+test("Opus, if chosen, gets the server-side fallback for declined questions", async () => {
   const net = network();
-  await createHandler({ fetch: net.fetch, now: () => NOW }).fetch(post(ASK), env({ AI_MODEL: "claude-haiku-5-5" }));
+  await createHandler({ fetch: net.fetch, now: () => NOW }).fetch(post(ASK), env({ AI_MODEL: "claude-opus-5-5" }));
   const call = net.calls.claude[0];
-  assert.equal(call.body.model, "claude-haiku-5-5");
-  assert.equal(call.body.fallbacks, undefined);
-  assert.ok(!String(call.beta || "").includes("server-side-fallback"));
+  assert.equal(call.body.model, "claude-opus-5-5");
+  assert.equal(call.body.fallbacks, "default");
+  assert.match(call.beta, /server-side-fallback-2026-07-01/);
+});
+
+test("wrangler.toml uses Claude Haiku 5.5, a model the API serves", () => {
+  const toml = readFileSync(path.join(here, "..", "wrangler.toml"), "utf8");
+  assert.match(toml, /^AI_MODEL = "claude-haiku-5-5"$/m);
+  assert.doesNotMatch(toml, /claude-3-/, "Claude 3.x models are retired");
 });
 
 test("rejects malformed or oversized requests before any network call", async () => {

@@ -43,7 +43,7 @@ Lo que más ayuda es ir apuntando las dudas reales que te llegan, con su respues
 
 | Ajuste | Qué hace | Ahora |
 | --- | --- | --- |
-| `AI_MODEL` | Modelo de Claude | `claude-opus-5-5` |
+| `AI_MODEL` | Modelo de Claude | `claude-haiku-5-5` |
 | `AI_EFFORT` | Cuánto «piensa» antes de responder (`low`, `medium`, `high`) | `low` |
 | `MONTHLY_LIMIT` | Preguntas al mes por persona | `30` |
 
@@ -55,10 +55,12 @@ Estimación con unos 4.800 tokens de instrucciones y conocimiento, respuestas co
 
 | Modelo | Primera pregunta | Siguientes | 30 preguntas al mes |
 | --- | --- | --- | --- |
+| Claude Haiku 5.5 (`claude-haiku-5-5`, **el que está puesto**) | unos 0,001 $ | menos de 0,001 $ | menos de 0,03 $ |
 | Claude Opus 5.5 (`claude-opus-5-5`, el más capaz) | unos 0,03 $ | unos 0,013 $ | unos 0,60 $ |
-| Claude Haiku 5.5 (`claude-haiku-5-5`, el más barato) | unos 0,001 $ | menos de 0,001 $ | unos 0,03 $ |
 
-Cada suscripción de 0,99 € deja unos 0,70 €, después de quitar el IVA y la comisión del 15 % de las tiendas para pequeños desarrolladores. Con Opus, alguien que agote las 30 preguntas consume casi todo ese margen. Con Haiku, casi nada. Si eliges Haiku, cambia `AI_MODEL` a `claude-haiku-5-5`; el código ya lo tiene en cuenta.
+Cada suscripción de 2,99 € deja unos 2,10 €, después de quitar el IVA y la comisión del 15 % de las tiendas para pequeños desarrolladores. Con Haiku, el asistente apenas consume margen aunque alguien agote las 30 preguntas. Si un día quieres respuestas de más calidad, cambia `AI_MODEL` a `claude-opus-5-5`: el código le añade solo el reintento con otro modelo cuando una pregunta es rechazada, porque Haiku no lo tiene.
+
+Con un modelo tan barato puedes subir `MONTHLY_LIMIT` sin que el coste se note.
 
 ## Pruebas
 

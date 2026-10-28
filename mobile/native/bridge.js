@@ -103,7 +103,7 @@ if (Capacitor.isNativePlatform()) {
       available: !!rcKey,
       /* { active, trial, until, willRenew, manageUrl } */
       status: () => rc().then((p) => p.getCustomerInfo()).then((r) => summary(r.customerInfo)),
-      /* The monthly package: { price: "0,99 €", trial: true|false, trialPeriod: "P1M" }, or null if none is set up.
+      /* The monthly package: { price: "2,99 €", trial: true|false, trialPeriod: "P1M" }, or null if none is set up.
          trial is true only when this account can still get the free month (Android: the store only offers it
          then; iPhone: Apple's eligibility check; when Apple can't tell, the price without the trial is shown). */
       offer: async () => {

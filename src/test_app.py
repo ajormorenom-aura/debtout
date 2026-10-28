@@ -75,7 +75,8 @@ window.DebtOutNative = {
 
 PREMIUM = {"active": True, "trial": False, "until": "2027-01-01T00:00:00Z", "willRenew": True, "manageUrl": None}
 FREE = {"active": False, "trial": False, "until": None, "willRenew": False, "manageUrl": None}
-OFFER = {"price": "0,99 €", "trial": True, "trialPeriod": "P1M"}
+PRICE = "2,99 €"  # PREMIUM_PRICE in src/build.py (and the price set in the stores)
+OFFER = {"price": PRICE, "trial": True, "trialPeriod": "P1M"}
 
 
 def fake_phone(plan, sub=PREMIUM, offer=OFFER):
@@ -290,7 +291,7 @@ with sync_playwright() as p:
         for doc, must, mustnot in [("aviso", ["Versión beta", "Inter"], ["Unbounded", "Manrope"]),
                                    ("privacidad", ["Netlify, Inc.", "Marco de Privacidad", "Anthropic", "Usar mi plan", "Nunca tu nombre", "no las usa para entrenar"], ["Google Fonts", "contraseña (guardada", "Stripe", "Invita"]),
                                    ("cookies", ["debtout.app.v3", "debtout-app-"], ["Google Fonts"]),
-                                   ("terminos", ["Beta gratuita", "DebtOut Premium en la app", "1 mes gratis", "una sola vez por cuenta", "24 horas antes", "Asistente de IA"], ["Invita a un amigo", "0,99 € al mes, IVA incluido. Es el precio final", "2 meses"])]:
+                                   ("terminos", ["Beta gratuita", "DebtOut Premium en la app", "1 mes gratis", "una sola vez por cuenta", "24 horas antes", "Asistente de IA", PRICE + " al mes (IVA incluido)"], ["Invita a un amigo", "Es el precio final", "2 meses", "0,99"])]:
             act(pg, "legal", doc, wait=600)
             lt = pg.locator(".sheet .legal").inner_text()
             check(f"legal {doc} content", all(m in lt for m in must) and not any(m in lt for m in mustnot), [m for m in must if m not in lt] + [m for m in mustnot if m in lt])
@@ -439,6 +440,11 @@ with sync_playwright() as p:
         check("security policy inside the website page", pg5.locator('meta[http-equiv="Content-Security-Policy"]').count() == 1
               and not os.path.exists(os.path.join(ROOT, "web", "_headers")) and not os.path.exists(os.path.join(ROOT, "netlify.toml")))
         check("website images load", pg5.evaluate("[...document.querySelectorAll('.hero img')].every(i => i.complete && i.naturalWidth > 0)"))
+        price_txt = pg5.locator("#precio").inner_text()
+        check("website shows the Premium price", "1 mes gratis" in price_txt and "y después " + PRICE + " al mes" in price_txt, price_txt)
+        stale = [os.path.relpath(os.path.join(d, f), ROOT) for top in ["web", os.path.join("mobile", "www")] for d, _, fs in os.walk(os.path.join(ROOT, top))
+                 for f in fs if f.endswith((".html", ".js")) and "0,99" in open(os.path.join(d, f), encoding="utf-8").read()]
+        check("no old price left in the published files", not stale, stale)
         check("website has no fake reviews or ratings", not any(w in pg5.locator("body").inner_text().lower() for w in ["opiniones de usuarios", "valoración", "★", "descargas"]))
         lo, hi = payoff(3200, 19.9, 95), payoff(3200, 19.9, 195)
         out = pg5.evaluate("['r-min-t','r-min-i','r-plan-t','r-plan-i','r-win-t'].map(id => document.getElementById(id).textContent)")
@@ -612,8 +618,8 @@ with sync_playwright() as p:
         check("free phone: a second debt is locked", "Más de una deuda es Premium" in pg9.locator(".sheet-panel").inner_text())
         act(pg9, "gateYes", scope=".sheet-panel ", wait=1000)
         prem = pg9.locator(".view").inner_text()
-        check("free phone: Premium screen shows the free month and the price", "1 mes gratis de Premium" in prem and "Después, 0,99 € al mes" in prem
-              and "Empezar mi mes gratis" in prem and "solo para quien no lo ha disfrutado antes" in prem and "se renueva cada mes por 0,99 €" in prem and "24 horas" in prem, prem)
+        check("free phone: Premium screen shows the free month and the price", "1 mes gratis de Premium" in prem and "Después, " + PRICE + " al mes" in prem
+              and "Empezar mi mes gratis" in prem and "solo para quien no lo ha disfrutado antes" in prem and "se renueva cada mes por " + PRICE in prem and "24 horas" in prem, prem)
         act(pg9, "subBuy", wait=1200)
         check("free phone: starting the free month unlocks Premium", ["buy"] in nat9() and pg9.locator(".toast").inner_text().startswith("¡Listo! Tu mes gratis")
               and screen_h1(pg9) != "1 mes gratis de Premium", pg9.locator(".toast").inner_text())
@@ -633,7 +639,7 @@ with sync_playwright() as p:
         act(pg9, "tab", "settings", wait=500)
         act(pg9, "toPremium", wait=900)
         prem = pg9.locator(".view").inner_text()
-        check("no second free month: the price is shown without a trial", "Suscribirme por 0,99 € al mes" in prem and "gratis de Premium" not in prem and "solo para quien" not in prem, prem)
+        check("no second free month: the price is shown without a trial", "Suscribirme por " + PRICE + " al mes" in prem and "gratis de Premium" not in prem and "solo para quien" not in prem, prem)
         act(pg9, "subRestore", wait=600)
         check("restoring without a subscription says so", "No hay ninguna suscripción activa" in pg9.locator(".toast").inner_text())
         ctx9.close()
@@ -720,7 +726,7 @@ with sync_playwright() as p:
                 act(pg11, "debtAdd", wait=500)
                 check("web after the beta: free plan with 1 debt", "Más de una deuda es Premium" in pg11.locator(".sheet-panel").inner_text())
                 act(pg11, "gateYes", scope=".sheet-panel ", wait=800)
-                check("web after the beta: Premium is in the app", screen_h1(pg11) == "Plan gratis" and "0,99 €" in pg11.locator(".view").inner_text())
+                check("web after the beta: Premium is in the app", screen_h1(pg11) == "Plan gratis" and PRICE in pg11.locator(".view").inner_text())
             ctx11.close()
     except Exception:
         traceback.print_exc()

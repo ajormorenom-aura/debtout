@@ -10,7 +10,7 @@ DebtOut tiene tres caras, hechas con el mismo código:
 | --- | --- | --- |
 | **Web promocional** | `/` (`web/index.html`) | Presenta la app: cómo funciona, calculadora de intereses, privacidad, precio y preguntas frecuentes. Incluye las páginas legales `/aviso-legal/`, `/privacidad/`, `/cookies/` y `/terminos/`. |
 | **App web** | `/app/` (`web/app/`) | La app, instalable desde el navegador y con funcionamiento sin conexión. Quien la instaló antes de que existiera la web sigue entrando directo a la app. |
-| **App para iPhone y Android** | `mobile/` | La misma app empaquetada con Capacitor para App Store y Google Play, con notificaciones de pago reales, Premium por suscripción (1 mes gratis y después 0,99 € al mes) y el asistente con IA. Ver [`mobile/README.md`](mobile/README.md). |
+| **App para iPhone y Android** | `mobile/` | La misma app empaquetada con Capacitor para App Store y Google Play, con notificaciones de pago reales, Premium por suscripción (1 mes gratis y después 2,99 € al mes) y el asistente con IA. Ver [`mobile/README.md`](mobile/README.md). |
 | **Servidor del asistente** | `server/` | Pequeño servidor en Cloudflare Workers entre la app y la IA (Claude): comprueba la suscripción y limita las preguntas. Su base de conocimiento está en `server/conocimiento/`. Ver [`server/README.md`](server/README.md). |
 
 ## Qué hay en el repositorio

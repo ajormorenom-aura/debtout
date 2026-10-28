@@ -46,6 +46,10 @@ REVENUECAT_IOS_KEY = ""      # starts with appl_
 REVENUECAT_ANDROID_KEY = ""  # starts with goog_
 AI_URL = ""                  # for example https://debtout-asistente.your-account.workers.dev
 
+# Monthly price of Premium shown in the app, the website and the terms (VAT included). What the stores charge is
+# set in App Store Connect and Play Console: keep both the same. The purchase screen shows the store's own price.
+PREMIUM_PRICE = "2,99 €"
+
 DESC = ("Reparte tu sueldo entre gastos fijos, deudas, ahorro y dinero libre, y mira cuándo "
         "terminarás de pagar tus deudas. Sin conectar tu banco. Gratis durante la beta.")
 TITLE = "DebtOut · Tu plan para salir de deudas"
@@ -97,7 +101,7 @@ def absolute(rel):
 
 
 # ---------- legal texts ----------
-legal_src = read("legal_beta.html")
+legal_src = swap(read("legal_beta.html"), "{{PREMIUM_PRICE}}", PREMIUM_PRICE, count=read("legal_beta.html").count("{{PREMIUM_PRICE}}") or 1)
 parts = re.split(r"<!--doc:(\w+)\|([^>]+)-->", legal_src)
 docs = {}
 for i in range(1, len(parts), 3):
@@ -116,6 +120,7 @@ def build_app(prefix, native):
     app = swap(app, '"__VERSION__"', json.dumps(VERSION))
     app = swap(app, "__SW_URL__", prefix + "sw.js")
     app = swap(app, '"__BETA_END__"', json.dumps(WEB_BETA_END))
+    app = swap(app, '"__PREMIUM_PRICE__"', json.dumps(PREMIUM_PRICE))
     app = swap(app, 'url("fonts/', f'url("{prefix}fonts/', count=len(FONTS))
     style_end = app.index("</style>") + len("</style>")
     style, body = app[:style_end].strip(), app[style_end:].strip()
@@ -365,6 +370,7 @@ tokens = {
     "MARK_HERO": mark("hero"),
     "STORES": store_badge(APP_STORE_URL, "iPhone", PHONE_IC) + store_badge(PLAY_STORE_URL, "Android", PHONE_IC),
     "PREMIUM_TAG": "En la app" if stores_live else "Muy pronto",
+    "PREMIUM_PRICE": PREMIUM_PRICE,
     "HERO_PILL": "<b>NUEVO</b> Asistente con IA en la app" if stores_live else "<b>MUY PRONTO</b> Asistente con IA en la app",
     "STORES_NOTE": ("Descárgala gratis o úsala en el navegador." if stores_live
                     else "Muy pronto en App Store y Google Play. Mientras tanto, úsala gratis en el navegador del móvil o del ordenador e instálala desde allí."),

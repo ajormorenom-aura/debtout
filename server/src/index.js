@@ -94,7 +94,7 @@ async function isPremium(user, key, env, doFetch, now) {
 
 async function ask(env, doFetch, messages) {
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, fetch: doFetch, maxRetries: 1, timeout: 50000 });
-  const model = env.AI_MODEL || "claude-opus-5-5";
+  const model = env.AI_MODEL || "claude-haiku-5-5";
   const params = {
     model,
     max_tokens: 4000,
@@ -102,9 +102,9 @@ async function ask(env, doFetch, messages) {
     system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
     messages,
   };
-  /* If the model declines, the API retries on the model Anthropic recommends for that case. Haiku has no
-     server-side fallback, so it is sent as a plain request. */
-  const response = model.startsWith("claude-haiku")
+  /* If the model declines, the API retries on the model Anthropic recommends for that case. Haiku models have
+     no server-side fallback, so they get a plain request (a declined question gets a kind answer below). */
+  const response = /haiku/.test(model)
     ? await client.messages.create(params)
     : await client.beta.messages.create({ ...params, betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" });
   if (response.stop_reason === "refusal") return { refused: true, text: "" };
