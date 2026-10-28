@@ -5,7 +5,7 @@
   "description": "Reparte tu sueldo entre gastos fijos, deudas, ahorro y dinero libre, y mira cuándo terminarás de pagar tus deudas. Sin conectar tu banco. Gratis durante la beta.",
   "lang": "es",
   "dir": "ltr",
-  "start_url": "./",
+  "start_url": "app/",
   "scope": "./",
   "display": "standalone",
   "background_color": "#070b08",

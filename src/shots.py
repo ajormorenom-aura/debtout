@@ -2,7 +2,7 @@
 import json, os, tempfile, sys
 from playwright.sync_api import sync_playwright
 
-BASE = "http://127.0.0.1:8765/"
+BASE = "http://127.0.0.1:8765/app/"
 OUT = os.environ.get("SHOTS_DIR", os.path.join(tempfile.gettempdir(), "debtout-shots"))
 os.makedirs(OUT, exist_ok=True)
 which = sys.argv[1] if len(sys.argv) > 1 else "mobile"

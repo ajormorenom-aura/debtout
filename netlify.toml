@@ -1,4 +1,0 @@
-# Netlify publica tal cual la carpeta web/. No hay paso de compilación en Netlify:
-# los archivos de web/ se generan en local con `python3 src/build.py` y se suben ya listos.
-[build]
-  publish = "web"

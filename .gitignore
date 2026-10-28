@@ -2,3 +2,4 @@ src/preview/
 __pycache__/
 *.pyc
 .DS_Store
+venta/*.zip

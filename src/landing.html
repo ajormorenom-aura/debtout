@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="es" dir="ltr">
+<head>
+<script>
+/* Installed copies from before the website existed open here: send them straight to the app. */
+(function () {
+  try {
+    if (window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true) { location.replace("app/"); return; }
+  } catch (e) { /* ignore */ }
+  document.documentElement.className = "js";
+})();
+</script>
+{{HEAD}}<script src="datos-titular.js"></script>
+<script type="application/ld+json">{{JSONLD}}</script>
+<style>
+{{FONTS}}
+{{SITE_CSS}}
+/* ---------- home page ---------- */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:12px;top:-60px;z-index:50;padding:10px 14px;border-radius:10px;background:var(--green);color:var(--green-ink);font-weight:700;text-decoration:none}
+.skip:focus{top:12px}
+section{scroll-margin-top:72px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green)}
+.h2{font-family:var(--display);font-weight:700;font-size:clamp(30px,4.6vw,46px);line-height:1.08;letter-spacing:-.024em;margin:12px 0 14px;text-wrap:balance}
+.sub{color:var(--muted);font-size:clamp(16px,1.9vw,18px);max-width:60ch;margin:0}
+.sec{padding:clamp(64px,10vw,112px) 0}
+.sec-head{max-width:720px;margin-bottom:clamp(32px,5vw,52px)}
+.center{text-align:center;margin-inline:auto}
+.center .sub{margin-inline:auto}
+.card{background:var(--surface);border-radius:22px;box-shadow:inset 0 0 0 1px var(--line)}
+
+/* hero */
+.hero{position:relative;overflow:hidden;padding:clamp(40px,7vw,88px) 0 clamp(16px,3vw,32px);isolation:isolate}
+.hero::before{content:"";position:absolute;inset:0;z-index:-2;background:radial-gradient(640px 520px at 12% 8%,rgba(140,198,63,.16),transparent 70%),radial-gradient(700px 560px at 92% 86%,rgba(92,207,230,.10),transparent 70%)}
+.hero::after{content:"";position:absolute;inset:0;z-index:-1;background-image:linear-gradient(rgba(140,198,63,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(140,198,63,.05) 1px,transparent 1px);background-size:36px 36px;-webkit-mask-image:linear-gradient(to bottom,#000,transparent 75%);mask-image:linear-gradient(to bottom,#000,transparent 75%)}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:clamp(32px,5vw,72px);align-items:center}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 8px;border-radius:99px;background:rgba(140,198,63,.1);box-shadow:inset 0 0 0 1px rgba(140,198,63,.35);color:var(--green-hi);font-size:13.5px;font-weight:600}
+.pill b{background:var(--green);color:var(--green-ink);border-radius:99px;padding:2px 8px;font-size:11px;letter-spacing:.1em}
+.h1{font-family:var(--display);font-weight:700;font-size:clamp(40px,6.6vw,72px);line-height:1.02;letter-spacing:-.032em;margin:20px 0 20px;text-wrap:balance}
+.h1 em{font-style:normal;background:linear-gradient(100deg,var(--green-hi),var(--green) 45%,var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--muted);font-size:clamp(17px,2vw,20px);line-height:1.55;max-width:34em;margin:0}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.cta-row .btn{min-height:54px;padding:0 26px;font-size:16px;border-radius:16px}
+.trust{list-style:none;margin:28px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:10px 22px;color:var(--muted);font-size:14.5px}
+.trust li{display:flex;align-items:center;gap:8px}
+.trust .ic{width:18px;height:18px;color:var(--green)}
+
+.stage{position:relative;display:flex;justify-content:center;padding:10px 0}
+.halo{position:absolute;width:76%;aspect-ratio:1;top:12%;border-radius:50%;background:radial-gradient(circle,rgba(140,198,63,.28),transparent 64%);filter:blur(10px);z-index:-1}
+.phone{position:relative;width:min(300px,78vw);aspect-ratio:780/1688;border-radius:44px;padding:9px;background:#0a0f0b;box-shadow:0 0 0 1px #24322a,0 0 0 2px #0a0f0b,0 0 0 3px #1c271f,0 50px 110px -30px rgba(0,0,0,.9),0 0 80px rgba(140,198,63,.10)}
+.phone img{display:block;width:100%;height:100%;border-radius:36px;object-fit:cover;background:var(--bg)}
+.float{position:absolute;display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:16px;background:rgba(13,19,15,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:inset 0 0 0 1px var(--line-2),0 18px 40px -18px rgba(0,0,0,.9);font-size:14px;font-weight:600;white-space:nowrap}
+.float .dot{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;flex:none}
+.float .dot .ic{width:18px;height:18px}
+.float small{display:block;color:var(--muted);font-weight:500;font-size:12.5px}
+.f1{left:-4%;top:22%}.f1 .dot{background:rgba(255,122,107,.14);color:var(--coral)}
+.f2{right:-6%;top:52%}.f2 .dot{background:rgba(240,189,79,.14);color:var(--amber)}
+.f3{left:2%;bottom:9%}.f3 .dot{background:rgba(140,198,63,.16);color:var(--green-hi)}
+.js .float{animation:bob 6s ease-in-out infinite}
+.js .f2{animation-delay:-2s}.js .f3{animation-delay:-4s}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+.stores{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:22px}
+.store{display:inline-flex;align-items:center;gap:10px;min-height:50px;padding:6px 16px 6px 12px;border-radius:14px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2);color:var(--text);text-decoration:none;font-weight:700;font-size:15px;line-height:1.15}
+.store small{display:block;font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+.store .ic{color:var(--green)}
+a.store:hover{background:var(--surface-2);color:var(--text)}
+.store.soon{opacity:.85}
+.stores-note{color:var(--faint);font-size:13.5px;margin:12px 0 0;max-width:46ch}
+#install{display:none}
+#install.on{display:inline-flex}
+
+/* steps */
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;counter-reset:s}
+.step{position:relative;padding:24px 22px 26px;counter-increment:s}
+.step::before{content:counter(s);display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:rgba(140,198,63,.14);box-shadow:inset 0 0 0 1px rgba(140,198,63,.4);color:var(--green-hi);font-family:var(--display);font-weight:700;font-size:18px;margin-bottom:18px}
+.step h3{font-family:var(--display);font-size:20px;font-weight:600;margin:0 0 8px;letter-spacing:-.01em}
+.step p{color:var(--muted);font-size:15px;margin:0}
+
+/* calculator */
+.calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(20px,3vw,32px);align-items:start}
+.calc-in{padding:clamp(20px,3vw,30px);display:flex;flex-direction:column;gap:16px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field.full{grid-column:1/-1}
+.field>span{font-size:13.5px;font-weight:600;color:var(--muted)}
+.inp{display:flex;align-items:center;gap:6px;background:var(--bg);border-radius:14px;box-shadow:inset 0 0 0 1px var(--line-2);padding:0 14px;min-height:52px;transition:box-shadow .2s}
+.inp:focus-within{box-shadow:inset 0 0 0 1.5px var(--green),0 0 0 4px rgba(140,198,63,.14)}
+.inp input{flex:1;min-width:0;border:0;background:transparent;color:var(--text);font:600 18px/1 var(--display);outline:none;font-variant-numeric:tabular-nums;padding:0}
+.inp em{font-style:normal;color:var(--muted);font-size:15px}
+.slider-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.slider-top output{font-family:var(--display);font-size:20px;color:var(--text);font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;cursor:pointer;margin:0;--p:20%}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:99px;background:linear-gradient(90deg,var(--green) var(--p),var(--raise) var(--p))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--text);margin-top:-10px;box-shadow:0 0 0 6px rgba(140,198,63,.22),0 2px 8px rgba(0,0,0,.5)}
+input[type=range]::-moz-range-track{height:6px;border-radius:99px;background:var(--raise)}
+input[type=range]::-moz-range-progress{height:6px;border-radius:99px;background:var(--green)}
+input[type=range]::-moz-range-thumb{width:26px;height:26px;border:0;border-radius:50%;background:var(--text);box-shadow:0 0 0 6px rgba(140,198,63,.22)}
+.calc-out{padding:clamp(20px,3vw,30px);display:flex;flex-direction:column;gap:18px;background:linear-gradient(160deg,#142118,#0b110d 62%);box-shadow:inset 0 0 0 1px #25362a}
+.res{display:flex;flex-direction:column;gap:8px}
+.res-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 12px;font-size:14.5px;color:var(--muted)}
+.res-top b{font-family:var(--display);font-size:clamp(20px,2.4vw,24px);color:var(--text);white-space:nowrap;font-weight:600}
+.bar{height:12px;border-radius:99px;background:var(--raise);overflow:hidden}
+.bar span{display:block;height:100%;border-radius:inherit;transition:width .5s cubic-bezier(.2,.7,.2,1)}
+.bar.min span{background:var(--coral)}
+.bar.plan span{background:linear-gradient(90deg,var(--green),var(--green-hi))}
+.res small{color:var(--faint);font-size:13.5px}
+.win{display:flex;gap:12px;align-items:flex-start;padding:16px;border-radius:16px;background:rgba(140,198,63,.09);box-shadow:inset 0 0 0 1px rgba(140,198,63,.3);color:var(--green-hi);font-size:15.5px;font-weight:600}
+.win.bad{background:rgba(255,122,107,.08);box-shadow:inset 0 0 0 1px rgba(255,122,107,.3);color:#ffb3a9}
+.win .ic{margin-top:2px}
+.disc{color:var(--faint);font-size:13px;margin:0}
+
+/* features */
+.feats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.feat{padding:24px}
+.feat .badge{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;margin-bottom:16px}
+.feat .badge .ic{width:22px;height:22px}
+.feat h3{font-family:var(--display);font-size:19px;font-weight:600;margin:0 0 6px;letter-spacing:-.01em}
+.feat p{color:var(--muted);font-size:15px;margin:0}
+.b-green{background:rgba(140,198,63,.14);color:var(--green-hi)}
+.b-coral{background:rgba(255,122,107,.12);color:var(--coral)}
+.b-cyan{background:rgba(92,207,230,.12);color:var(--cyan)}
+.b-amber{background:rgba(240,189,79,.13);color:var(--amber)}
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,3vw,40px);margin-top:clamp(40px,6vw,64px);justify-items:center}
+.gallery figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
+.gallery .phone{width:min(250px,100%)}
+.gallery figcaption{color:var(--muted);font-size:14.5px;max-width:26ch}
+.gallery figcaption b{display:block;color:var(--text);font-size:16px}
+
+/* privacy */
+.priv{position:relative;overflow:hidden;padding:clamp(28px,5vw,56px);display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(24px,4vw,56px);align-items:center;background:linear-gradient(150deg,#122016,#0a100c 60%);box-shadow:inset 0 0 0 1px #25362a}
+.priv .shield{width:64px;height:64px;border-radius:20px;display:grid;place-items:center;background:var(--green);color:var(--green-ink);box-shadow:0 0 40px rgba(140,198,63,.4);margin-bottom:18px}
+.priv .shield .ic{width:32px;height:32px}
+.plist{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.plist li{padding:18px;border-radius:16px;background:rgba(3,5,4,.45);box-shadow:inset 0 0 0 1px var(--line-2)}
+.plist b{display:flex;align-items:center;gap:8px;font-size:15.5px;margin-bottom:4px}
+.plist b .ic{width:18px;height:18px;color:var(--green)}
+.plist span{color:var(--muted);font-size:14.5px}
+
+/* pricing */
+.prices{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:900px;margin-inline:auto}
+.price{padding:clamp(22px,3vw,30px);display:flex;flex-direction:column;gap:14px}
+.price.feat-p{background:linear-gradient(160deg,#16241a,#0c130e);box-shadow:inset 0 0 0 1px rgba(140,198,63,.5),0 30px 80px -40px rgba(140,198,63,.35)}
+.price-n{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px}
+.tag{font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;color:var(--green-hi);background:rgba(140,198,63,.14)}
+.tag.muted{color:var(--muted);background:var(--raise)}
+.amt{font-family:var(--display);font-size:46px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.amt span{font-size:16px;color:var(--muted);font-weight:500;letter-spacing:0;margin-left:6px}
+.amt .then{display:block;margin:10px 0 0}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;color:var(--muted);font-size:15px}
+.checks li{display:flex;gap:10px;align-items:flex-start}
+.checks .ic{width:18px;height:18px;color:var(--green);margin-top:3px}
+.price .btn{margin-top:auto}
+.price p{color:var(--muted);font-size:14.5px;margin:0}
+
+/* faq */
+.faq{max-width:820px;margin-inline:auto;display:flex;flex-direction:column;gap:10px}
+.faq details{border-radius:18px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+.faq details[open]{box-shadow:inset 0 0 0 1px var(--line-2)}
+.faq summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px 22px;font-weight:700;font-size:16.5px;border-radius:18px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .ic{color:var(--muted);transition:transform .25s}
+.faq details[open] summary .ic{transform:rotate(45deg);color:var(--green)}
+.faq details>div{padding:0 22px 20px;color:var(--muted);font-size:15.5px}
+.faq details>div p{margin:0 0 10px}
+.faq details>div p:last-child{margin:0}
+
+/* final call to action */
+.final{position:relative;overflow:hidden;text-align:center;padding:clamp(40px,7vw,80px) clamp(20px,4vw,48px);background:radial-gradient(520px 300px at 50% 0%,rgba(140,198,63,.22),transparent 70%),var(--surface);box-shadow:inset 0 0 0 1px rgba(140,198,63,.35)}
+.final .mark{width:64px;height:64px;color:var(--green);margin:0 auto 18px;display:block;filter:drop-shadow(0 0 22px rgba(140,198,63,.5))}
+.final .cta-row{justify-content:center}
+
+/* reveal on scroll (only with JavaScript; without it everything is visible) */
+.js .rv{opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.js .rv.in{opacity:1;transform:none}
+
+@media (max-width:980px){
+  .steps{grid-template-columns:1fr 1fr}
+  .feats{grid-template-columns:1fr 1fr}
+  .calc{grid-template-columns:1fr}
+  .priv{grid-template-columns:1fr}
+}
+@media (max-width:820px){
+  .hero-grid{grid-template-columns:1fr}
+  .stage{margin-top:12px}
+  .f1{left:0}.f2{right:0}.f3{left:4%}
+}
+@media (max-width:640px){
+  .steps,.feats,.prices,.plist{grid-template-columns:1fr}
+  .gallery{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:72%;overflow-x:auto;scroll-snap-type:x mandatory;justify-items:stretch;margin-inline:-16px;padding:4px 16px 12px;scrollbar-width:none}
+  .gallery::-webkit-scrollbar{display:none}
+  .gallery figure{scroll-snap-align:center}
+  .cta-row .btn{flex:1 1 100%}
+  .float{font-size:13px;padding:9px 12px}
+  .float .dot{width:30px;height:30px}
+  .f2{right:-2%}
+}
+@media (max-width:380px){
+  .fields{grid-template-columns:1fr}
+  .float small{display:none}
+}
+@media (prefers-reduced-motion:reduce){.js .rv{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3.5" y="11" width="17" height="11" rx="2.5"/><path d="M7.5 11V7a4.5 4.5 0 0 1 9 0v4"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M4 20 20 4"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 22V4M5 4h11l-2 4 2 4H5"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="1.6"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2.5"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><path d="M3 6l7 7 4-4 7 7"/><path d="M15 16h6v-6"/></symbol>
+  <symbol id="i-split" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 2.5V12l6.7 6.7M12 12H2.5"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 1.9 5.6L19.5 10.5 13.9 12.4 12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/><path d="M19 3v4M17 5h4"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.6L3 21l1.9-5.4A8.5 8.5 0 1 1 21 11.5z"/><path d="M8.5 11.5h.01M12.5 11.5h.01M16.5 11.5h.01"/></symbol>
+  <symbol id="i-bank" viewBox="0 0 24 24"><path d="M3 10 12 4l9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18"/><path d="M4 4l16 16"/></symbol>
+</svg>
+<a class="skip" href="#main">Saltar al contenido</a>
+{{HEADER}}
+
+<main id="main">
+  <!-- ========== hero ========== -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="pill">{{HERO_PILL}}</span>
+        <h1 class="h1" id="hero-title">Adiós a las deudas. <em>Hola al futuro.</em></h1>
+        <p class="lead">DebtOut convierte tu sueldo en un plan para cada mes: qué pagar, qué guardar y cuánto te queda libre. Y te dice en qué mes terminarás de pagar tus deudas.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="app/" data-cta data-cta-long>Empieza gratis<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          <a class="btn btn-ghost" href="#calculadora">Calcula cuánto ahorras</a>
+        </div>
+        <ul class="trust">
+          <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-shield"/></svg>No conecta tu banco</li>
+          <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-lock"/></svg>Sin cuenta ni contraseña</li>
+          <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-eye"/></svg>Sin anuncios ni rastreadores</li>
+        </ul>
+        <div class="stores">
+          {{STORES}}
+          <button class="btn btn-ghost" type="button" id="install">Instalar ahora</button>
+        </div>
+        <p class="stores-note" id="stores-note">{{STORES_NOTE}}</p>
+      </div>
+      <div class="stage">
+        <span class="halo" aria-hidden="true"></span>
+        <div class="phone">
+          <img src="img/app-inicio.webp" width="780" height="1688" alt="Pantalla de inicio de DebtOut: el mes en que terminas de pagar tus deudas y el reparto de tu sueldo" fetchpriority="high">
+        </div>
+        <div class="float f1" aria-hidden="true"><span class="dot"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-flag"/></svg></span><span>Fecha de salida<small>El mes en que terminas</small></span></div>
+        <div class="float f2" aria-hidden="true"><span class="dot"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-bell"/></svg></span><span>Avisos de pago<small>Nada se te pasa</small></span></div>
+        <div class="float f3" aria-hidden="true"><span class="dot"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-chat"/></svg></span><span>Asistente con IA<small>Resuelve tus dudas</small></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== how it works ========== -->
+  <section class="sec" id="como-funciona" aria-labelledby="how-title">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="eyebrow">Cómo funciona</span>
+        <h2 class="h2" id="how-title">Tu plan, en cuatro pasos</h2>
+        <p class="sub">Sin hojas de cálculo ni fórmulas. Contestas cuatro preguntas y DebtOut hace las cuentas por ti.</p>
+      </div>
+      <ol class="steps">
+        <li class="step card rv"><h3>Pon tu sueldo</h3><p>Lo que te llega a la cuenta, cada mes o cada semana. Si cambia, la media de tus últimos meses.</p></li>
+        <li class="step card rv"><h3>Apunta gastos y deudas</h3><p>Alquiler, comida, luz… y cada deuda con lo que debes, su TAE y la cuota mínima.</p></li>
+        <li class="step card rv"><h3>Reparte tu sueldo</h3><p>Elige cuánto va a deudas y cuánto a ahorro. DebtOut te propone un reparto y te avisa si no llega.</p></li>
+        <li class="step card rv"><h3>Sigue el plan</h3><p>Marca cada pago cuando lo hagas y cierra el mes. Tus deudas bajan y tus metas crecen.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ========== calculator ========== -->
+  <section class="sec" id="calculadora" aria-labelledby="calc-title" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="eyebrow">Calculadora</span>
+        <h2 class="h2" id="calc-title">¿Cuánto te cuesta pagar solo el mínimo?</h2>
+        <p class="sub">Pon los datos de una deuda, por ejemplo tu tarjeta de crédito, y mira la diferencia que marca pagar un poco más cada mes.</p>
+      </div>
+      <form class="calc rv" id="calc" novalidate>
+        <div class="card calc-in">
+          <div class="fields">
+            <label class="field full"><span>Lo que debes</span><span class="inp"><input id="c-bal" inputmode="decimal" autocomplete="off" value="3.200" aria-describedby="c-note"><em>€</em></span></label>
+            <label class="field"><span>Interés (TAE)</span><span class="inp"><input id="c-apr" inputmode="decimal" autocomplete="off" value="19,9"><em>%</em></span></label>
+            <label class="field"><span>Cuota mínima al mes</span><span class="inp"><input id="c-min" inputmode="decimal" autocomplete="off" value="95"><em>€</em></span></label>
+          </div>
+          <div>
+            <div class="slider-top"><label for="c-extra">Pago extra cada mes</label><output id="c-extra-out" for="c-extra">100 €</output></div>
+            <input type="range" id="c-extra" min="0" max="500" step="10" value="100">
+          </div>
+          <p class="disc" id="c-note">Los datos se quedan en tu navegador: esta calculadora no envía nada.</p>
+        </div>
+        <div class="card calc-out" aria-live="polite">
+          <div class="res">
+            <div class="res-top"><span id="r-min-l">Solo el mínimo</span><b id="r-min-t">—</b></div>
+            <div class="bar min"><span id="r-min-b" style="width:100%"></span></div>
+            <small id="r-min-i">Intereses: —</small>
+          </div>
+          <div class="res">
+            <div class="res-top"><span id="r-plan-l">Con el extra</span><b id="r-plan-t">—</b></div>
+            <div class="bar plan"><span id="r-plan-b" style="width:40%"></span></div>
+            <small id="r-plan-i">Intereses: —</small>
+          </div>
+          <div class="win" id="r-win"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-spark"/></svg><span id="r-win-t">Calculando…</span></div>
+          <a class="btn btn-primary" href="app/" data-cta>Haz tu plan completo, gratis</a>
+          <p class="disc">Estimación orientativa: supone interés y cuotas constantes y no incluye comisiones. No es asesoramiento financiero.</p>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ========== features ========== -->
+  <section class="sec" id="funciones" aria-labelledby="feat-title" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="eyebrow">Funciones</span>
+        <h2 class="h2" id="feat-title">Todo lo que necesitas para salir de deudas</h2>
+        <p class="sub">Y nada que no necesites: sin gráficos imposibles, sin conectar cuentas, sin vender tus datos.</p>
+      </div>
+      <div class="feats">
+        <div class="feat card rv"><span class="badge b-green"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-flag"/></svg></span><h3>Tu fecha de salida</h3><p>El mes en que terminas de pagar y cuánto te cuestan los intereses, comparado con pagar solo el mínimo.</p></div>
+        <div class="feat card rv"><span class="badge b-coral"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-trend"/></svg></span><h3>Primero la más cara</h3><p>Pagas el mínimo de todas y el dinero extra va a la deuda con el interés más alto. Así pagas menos intereses.</p></div>
+        <div class="feat card rv"><span class="badge b-cyan"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-split"/></svg></span><h3>Tu sueldo, repartido</h3><p>Gastos fijos, deudas, ahorro y dinero libre: ves a dónde va cada euro antes de que se vaya.</p></div>
+        <div class="feat card rv"><span class="badge b-amber"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-calendar"/></svg></span><h3>Pagos y avisos</h3><p>Todos los pagos del mes en orden de fecha y, en la app, una notificación el día de cada uno para que no pagues recargos.</p></div>
+        <div class="feat card rv"><span class="badge b-cyan"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-chat"/></svg></span><h3>Asistente con IA</h3><p>Pregúntale qué deuda pagar antes, qué es la TAE o qué hacer si no llegas. Si quieres, responde con los números de tu plan.</p></div>
+        <div class="feat card rv"><span class="badge b-green"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-target"/></svg></span><h3>Metas de ahorro</h3><p>Fondo de emergencia, un viaje, una mudanza. El ahorro de cada mes se reparte en orden y ves cuándo llegas.</p></div>
+      </div>
+      <div class="gallery">
+        <figure class="rv"><div class="phone"><img src="img/app-plan.webp" width="780" height="1688" loading="lazy" alt="Resultado del plan: meses hasta salir de deudas y comparación con pagar solo el mínimo"></div><figcaption><b>Tu plan tiene salida</b>Cuánto tardas con tu plan y cuánto con el mínimo.</figcaption></figure>
+        <figure class="rv"><div class="phone"><img src="img/app-pagos.webp" width="780" height="1688" loading="lazy" alt="Calendario de pagos del mes con los pagos marcados como hechos"></div><figcaption><b>Pagos del mes</b>Marca cada pago y no se te escapa ninguno.</figcaption></figure>
+        <figure class="rv"><div class="phone"><img src="img/app-deudas.webp" width="780" height="1688" loading="lazy" alt="Lista de deudas con lo pendiente, el progreso y cuándo terminas cada una"></div><figcaption><b>Tus deudas, bajando</b>Lo que queda de cada una y cuándo la terminas.</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== privacy ========== -->
+  <section class="sec" id="privacidad" aria-labelledby="priv-title" style="padding-top:0">
+    <div class="wrap">
+      <div class="priv card rv">
+        <div>
+          <span class="shield"><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-shield"/></svg></span>
+          <h2 class="h2" id="priv-title">Tus números no salen de tu móvil</h2>
+          <p class="sub">Tu plan se guarda solo en tu dispositivo. DebtOut no lo recibe en ningún servidor y no puede verlo. Solo si tú lo activas, el asistente usa tus cifras para responderte, y nunca tu nombre. <a href="privacidad/">Lee la política de privacidad</a>.</p>
+        </div>
+        <ul class="plist">
+          <li><b><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-bank"/></svg>Sin conectar tu banco</b><span>No accede a tus cuentas, no guarda dinero y no hace pagos ni transferencias.</span></li>
+          <li><b><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-lock"/></svg>Sin cuenta</b><span>No te pedimos email ni contraseña. Tu nombre es opcional.</span></li>
+          <li><b><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-eye"/></svg>Sin cookies ni anuncios</b><span>Ni estadísticas de uso, ni rastreadores, ni venta de datos.</span></li>
+          <li><b><svg class="ic" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-download"/></svg>Tu copia, en tus manos</b><span>Exporta tu plan a un archivo y restáuralo en otro móvil cuando quieras.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== pricing ========== -->
+  <section class="sec" id="precio" aria-labelledby="price-title" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head center rv">
+        <span class="eyebrow">Precio</span>
+        <h2 class="h2" id="price-title">Empieza gratis</h2>
+        <p class="sub">En el navegador, DebtOut es gratis. En la app, Premium te da todo y empieza con un mes sin pagar nada.</p>
+      </div>
+      <div class="prices">
+        <div class="price card feat-p rv">
+          <div class="price-n">Web <span class="tag">Beta abierta</span></div>
+          <div class="amt">0 €<span>en el navegador</span></div>
+          <ul class="checks">
+            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Todo incluido mientras dure la beta</li>
+            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Después, gratis con 1 deuda y 1 meta</li>
+            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Copias de seguridad y sin conexión</li>
+            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Sin tarjeta ni datos de pago</li>
+          </ul>
+          <a class="btn btn-primary" href="app/" data-cta data-cta-long>Empieza gratis</a>
+        </div>
+        <div class="price card rv">
+          <div class="price-n">Premium en la app <span class="tag muted">{{PREMIUM_TAG}}</span></div>
+          <div class="amt">1 mes gratis<span class="then">y después {{PREMIUM_PRICE}} al mes</span></div>
+          <ul class="checks">
+            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Deudas y metas ilimitadas</li>
+            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Avisos de pago en el móvil</li>
+            <li><svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-check"/></svg>Asistente con IA</li>
+          </ul>
+          <p>IVA incluido. El mes gratis es una vez por cuenta de Apple o de Google. Se renueva cada mes y lo cancelas cuando quieras desde tu cuenta. Sin Premium, la app es gratis con 1 deuda y 1 meta.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FAQ ========== -->
+  <section class="sec" id="preguntas" aria-labelledby="faq-title" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head center rv">
+        <span class="eyebrow">Preguntas frecuentes</span>
+        <h2 class="h2" id="faq-title">Lo que suele preguntarse</h2>
+      </div>
+      <div class="faq rv">
+        <details><summary>¿DebtOut es gratis?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+          <div><p>En el navegador, sí: durante la beta tiene todas las funciones y no te pedimos tarjeta. En la app para iPhone y Android puedes usarla gratis con 1 deuda y 1 meta, o con Premium, que empieza con 1 mes gratis y después cuesta {{PREMIUM_PRICE}} al mes.</p></div></details>
+        <details><summary>¿Cómo funciona el mes gratis?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+          <div><p>Al contratar Premium en la app por primera vez, el primer mes no pagas nada. Lo gestionan Apple y Google: es una vez por cuenta, aunque cambies de correo o reinstales la app.</p><p>Si no quieres seguir, cancélalo desde los ajustes de tu cuenta de Apple o Google al menos 24 horas antes de que acabe el mes y no se te cobrará.</p></div></details>
+        <details><summary>¿Qué hace el asistente con IA y qué ve de mí?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+          <div><p>Responde dudas sobre tus deudas, el ahorro o cómo usar DebtOut. Solo ve lo que le preguntas. Si activas «Usar mi plan», también recibe las cifras de tu plan para responderte con tus números, pero nunca tu nombre. DebtOut no guarda tus preguntas.</p><p>Sus respuestas las genera una IA: pueden equivocarse y no son asesoramiento financiero. Está incluido en Premium.</p></div></details>
+        <details><summary>¿Tengo que conectar mi banco?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+          <div><p>No. DebtOut no se conecta a tus cuentas, no guarda dinero y no hace pagos. Tú escribes tu sueldo, tus gastos y tus deudas, y DebtOut hace las cuentas.</p></div></details>
+        <details><summary>¿Dónde se guardan mis datos?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+          <div><p>Solo en tu móvil o tu ordenador. No hay cuentas y DebtOut no recibe tu plan en ningún servidor, así que nadie más puede verlo. La única excepción la decides tú: si activas que el asistente use tu plan, sus cifras se envían para responderte.</p></div></details>
+        <details><summary>¿Qué pasa si cambio de móvil?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+          <div><p>En Ajustes, «Exportar mis datos» guarda una copia de tu plan en un archivo. En el móvil nuevo, «Restaurar una copia» lo recupera. Haz una copia de vez en cuando: si borras los datos del navegador o desinstalas la app, el plan se pierde.</p></div></details>
+        <details><summary>¿Cómo calcula cuándo termino de pagar?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+          <div><p>Cada mes paga la cuota mínima de todas tus deudas y el resto de lo que dedicas a deudas va primero a la que tiene el interés más alto. Es lo que menos intereses te cuesta.</p><p>La estimación supone que el interés y las cuotas no cambian y no incluye comisiones de tu banco.</p></div></details>
+        <details><summary>¿Es asesoramiento financiero?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+          <div><p>No. DebtOut es una herramienta para organizarte y hacer estimaciones con los datos que tú introduces. Antes de una decisión importante, confirma las cifras con tu banco o con un profesional.</p></div></details>
+        <details><summary>¿Cuándo estará en App Store y Google Play?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+          <div><p>Estamos preparando las versiones para iPhone y Android, con avisos de pago como notificaciones, el asistente con IA y Premium con 1 mes gratis. Mientras tanto, abre la app en el navegador del móvil y añádela a tu pantalla de inicio: se abre a pantalla completa y funciona sin conexión.</p></div></details>
+        <details><summary>¿Funciona sin conexión?<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+          <div><p>Sí. Después de abrirla una vez con internet, la app se abre y funciona aunque no tengas conexión.</p></div></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== final call to action ========== -->
+  <section class="sec" aria-labelledby="final-title" style="padding-top:0">
+    <div class="wrap">
+      <div class="final card rv">
+        {{MARK_HERO}}
+        <h2 class="h2 center" id="final-title">Tu plan para salir de deudas empieza hoy</h2>
+        <p class="sub center">Unos minutos para hacerlo, y cada mes sabrás qué pagar, qué guardar y cuánto te queda libre.</p>
+        <div class="cta-row"><a class="btn btn-primary" href="app/" data-cta data-cta-long>Empieza gratis<svg class="ic" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+{{FOOTER}}
+<script src="site.js"></script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* Someone who already has a plan on this device goes back to it. */
+  try {
+    var saved = JSON.parse(localStorage.getItem("debtout.app.v3") || "null");
+    if (saved && saved.stage === "app") {
+      document.querySelectorAll("[data-cta-long]").forEach(function (a) { a.firstChild.textContent = "Abrir mi plan"; });
+      document.querySelectorAll(".top [data-cta]").forEach(function (a) { a.textContent = "Abrir mi plan"; });
+    }
+  } catch (e) { /* storage unavailable */ }
+
+  /* ---- calculator: same maths as the app (monthly interest, constant payment) ---- */
+  function parseNum(s) {
+    s = String(s == null ? "" : s).replace(/[€%\s]/g, "");
+    if (!s) return NaN;
+    if (s.indexOf(",") > -1) s = s.replace(/\./g, "").replace(",", ".");
+    else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");
+    var n = Number(s);
+    return isFinite(n) ? n : NaN;
+  }
+  function fmt(n) { n = Math.round(Number(n) || 0); return (n < 0 ? "−" : "") + Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+  function eur(n) { return fmt(n) + " €"; }
+  function dur(m) {
+    if (!isFinite(m)) return "nunca";
+    if (m <= 0) return "0 meses";
+    var y = Math.floor(m / 12), r = m % 12;
+    if (!y) return m + (m === 1 ? " mes" : " meses");
+    return y + (y === 1 ? " año" : " años") + (r ? " y " + r + (r === 1 ? " mes" : " meses") : "");
+  }
+  function payoff(bal, apr, pay) {
+    var r = apr / 1200, m = 0, interest = 0;
+    if (bal <= 0) return { months: 0, interest: 0 };
+    if (pay <= bal * r + 0.001) return { months: Infinity, interest: Infinity };
+    while (bal > 0.005 && m < 600) { var i = bal * r; interest += i; bal = bal + i - pay; m++; }
+    return bal > 0.005 ? { months: Infinity, interest: Infinity } : { months: m, interest: interest };
+  }
+  var calc = $("calc");
+  function run() {
+    var bal = parseNum($("c-bal").value), apr = parseNum($("c-apr").value), min = parseNum($("c-min").value), extra = Number($("c-extra").value) || 0;
+    $("c-extra-out").textContent = eur(extra);
+    $("c-extra").style.setProperty("--p", (extra / 500 * 100) + "%");
+    var win = $("r-win"), wt = $("r-win-t");
+    if (!(bal > 0) || !(apr >= 0 && apr <= 100) || !(min > 0)) {
+      ["r-min-t", "r-plan-t"].forEach(function (id) { $(id).textContent = "—"; });
+      $("r-min-i").textContent = $("r-plan-i").textContent = "Intereses: —";
+      win.className = "win bad"; wt.textContent = "Escribe lo que debes, el interés (de 0 a 100 %) y la cuota mínima.";
+      return;
+    }
+    var a = payoff(bal, apr, min), b = payoff(bal, apr, min + extra);
+    $("r-min-l").textContent = "Solo el mínimo, " + eur(min) + " al mes";
+    $("r-plan-l").textContent = extra ? "Con " + eur(extra) + " más, " + eur(min + extra) + " al mes" : "Con el mismo pago";
+    $("r-min-t").textContent = isFinite(a.months) ? dur(a.months) : "No baja nunca";
+    $("r-plan-t").textContent = isFinite(b.months) ? dur(b.months) : "No baja nunca";
+    $("r-min-i").textContent = "Intereses: " + (isFinite(a.interest) ? eur(a.interest) : "sin fin");
+    $("r-plan-i").textContent = "Intereses: " + (isFinite(b.interest) ? eur(b.interest) : "sin fin");
+    var top = Math.max(isFinite(a.months) ? a.months : 0, isFinite(b.months) ? b.months : 0, 1);
+    $("r-min-b").style.width = (isFinite(a.months) ? a.months / top * 100 : 100).toFixed(1) + "%";
+    $("r-plan-b").style.width = (isFinite(b.months) ? Math.max(3, b.months / top * 100) : 100).toFixed(1) + "%";
+    if (!isFinite(b.months)) {
+      win.className = "win bad";
+      wt.textContent = "Así la deuda no baja nunca: los intereses son unos " + eur(bal * apr / 1200) + " al mes. Sube el pago para empezar a bajarla.";
+    } else if (!isFinite(a.months)) {
+      win.className = "win";
+      wt.textContent = "Con el mínimo no terminarías nunca. Con " + eur(min + extra) + " al mes terminas en " + dur(b.months) + ".";
+    } else if (extra > 0) {
+      win.className = "win";
+      wt.textContent = "Te ahorras " + eur(a.interest - b.interest) + " en intereses y terminas " + dur(a.months - b.months) + " antes.";
+    } else {
+      win.className = "win";
+      wt.textContent = "Mueve el pago extra y mira cuánto antes terminas.";
+    }
+  }
+  if (calc) { calc.addEventListener("input", run); calc.addEventListener("submit", function (e) { e.preventDefault(); }); run(); }
+
+  /* ---- install the web app (Chrome, Edge and Android hand us an install prompt) ---- */
+  var prompt = null, btn = $("install");
+  window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); prompt = e; btn.classList.add("on"); });
+  btn.addEventListener("click", function () {
+    if (!prompt) return;
+    var e = prompt; prompt = null; btn.classList.remove("on");
+    try { e.prompt(); } catch (ex) { location.href = "app/"; }
+  });
+  window.addEventListener("appinstalled", function () { btn.classList.remove("on"); });
+  var ios = /iPhone|iPad|iPod/.test(navigator.userAgent || "") || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if (ios && $("stores-note") && !document.querySelector("a.store")) {
+    $("stores-note").textContent = "Muy pronto en App Store. Mientras tanto, abre la app en Safari, toca Compartir y elige «Añadir a pantalla de inicio».";
+  }
+
+  /* ---- reveal sections as they scroll into view ---- */
+  var items = document.querySelectorAll(".rv");
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); } });
+    }, { rootMargin: "0px 0px -8% 0px" });
+    items.forEach(function (el) { io.observe(el); });
+  } else {
+    items.forEach(function (el) { el.classList.add("in"); });
+  }
+
+  /* The same service worker as the app: after a visit here, the app also opens offline. */
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); });
+  }
+})();
+</script>
+</body>
+</html>
