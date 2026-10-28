@@ -1,6 +1,6 @@
 """Build a phone-friendly preview of the beta for the claude.ai artifact viewer.
 
-Same app as the Netlify build, adapted to the viewer's frame: fonts inlined as data URIs, no service worker,
+Same app as the website build, adapted to the viewer's frame: fonts inlined as data URIs, no service worker,
 no install prompts, no file download (the viewer blocks downloads; copying the text still works),
 and the notch / home-bar insets left to the viewer's own page padding.
 """
@@ -13,7 +13,7 @@ VERSION = "0.10.0"
 
 app = open(os.path.join(SRC, "app.html"), encoding="utf-8").read()
 
-# legal texts, same source as the Netlify build
+# legal texts, same source as the website build
 legal_src = open(os.path.join(SRC, "legal_beta.html"), encoding="utf-8").read()
 parts = re.split(r"<!--doc:(\w+)\|([^>]+)-->", legal_src)
 docs = {}

@@ -1,7 +1,0 @@
-# Netlify publica tal cual la carpeta web/. No hay paso de compilación en Netlify:
-# los archivos de web/ se generan en local con `python3 src/build.py` y se suben ya listos.
-[build]
-  publish = "web"
-  # Solo se publica si el envío cambia algo en web/: los cambios de la app móvil (mobile/) o de los
-  # scripts (src/) sin regenerar web/ no gastan créditos de Netlify.
-  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- web/"

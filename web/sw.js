@@ -2,7 +2,7 @@
    Keeps a copy of the app's own files (code, font, icons) and of the home page so they open fast and work offline.
    It never stores or sends personal data: your plan lives only in this device's local storage. */
 "use strict";
-var BUILD = "0.10.0-b40462211a";
+var BUILD = "0.10.0-76982c932c";
 var CACHE = "debtout-app-" + BUILD;
 var CORE = ["./", "app/", "manifest.webmanifest", "datos-titular.js", "fonts/inter-400.v1.woff", "fonts/inter-600.v1.woff", "fonts/inter-700.v1.woff", "fonts/inter-800.v1.woff", "fonts/inter-display-600.v1.woff", "fonts/inter-display-700.v1.woff", "icons/favicon.svg", "icons/favicon-32.png", "icons/apple-touch-icon.png", "icons/icon-192.png"];
 var NET_TIMEOUT = 3500;

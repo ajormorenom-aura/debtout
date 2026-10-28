@@ -42,7 +42,7 @@ En Android Studio, el botón ▶ instala la app en el emulador o en tu móvil (c
    - que la app se descarga de App Store o Google Play y que Apple o Google tratan los datos de la descarga según sus propias políticas;
    - que los avisos de pago son notificaciones locales que el propio móvil programa (no salen del dispositivo) y que se pueden desactivar;
    - que iCloud o la copia de seguridad de Google pueden incluir los datos de la app en las copias del propio usuario, si las tiene activadas;
-   - que Netlify solo interviene en la versión web.
+   - que el proveedor que aloje la web solo interviene en la versión web.
 5. **Sube la versión** en cada envío: `versionCode` y `versionName` en `android/app/build.gradle`; *Version* y *Build* en Xcode. Cada subida a una tienda necesita un número de compilación mayor que el anterior.
 
 ## Publicar en Google Play

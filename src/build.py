@@ -4,11 +4,11 @@ Inputs (this folder): landing.html (website home page), app.html (the app: style
 legal_beta.html (legal texts, shared by the app and the website).
 
 Outputs:
-  ../web          Netlify publishes this folder as it is (there is no build step on Netlify):
+  ../web          the website, ready to publish as it is on any static host (no build step needed there):
                     index.html            website home page
                     app/index.html        the app (installable; same identity as before, so old installs keep working)
                     aviso-legal/, privacidad/, cookies/, terminos/   legal pages of the website
-                    manifest, service worker, headers, 404, robots.txt, sitemap.xml (only with SITE_URL), site.js
+                    manifest, service worker, 404, robots.txt, sitemap.xml (only with SITE_URL), site.js
                     and, only if missing, the owner data file (datos-titular.js)
   ../mobile/www   the app for Capacitor (iPhone/Android): no service worker or install prompts. native.js, the
                   bridge to the phone, is bundled from mobile/native/bridge.js when mobile/node_modules exists.
@@ -66,6 +66,15 @@ def swap(s, old, new, count=1):
     return s.replace(old, new)
 
 
+# Security policy of the website and the web app. It goes inside each page (a <meta> tag), so it works on any
+# host. Nothing is loaded from other sites; inline code is ours (the pages are generated here).
+CSP = ("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
+       "img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; "
+       "base-uri 'none'; form-action 'none'; object-src 'none'")
+SECURITY_META = (f'<meta http-equiv="Content-Security-Policy" content="{CSP}">\n'
+                 '<meta name="referrer" content="strict-origin-when-cross-origin">\n')
+
+
 def esc(s):
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 
@@ -102,7 +111,7 @@ def build_app(prefix, native):
     if native:
         links = '<script src="native.js"></script>\n'
     else:
-        links = (f'<link rel="manifest" href="{prefix}manifest.webmanifest">\n'
+        links = (SECURITY_META + f'<link rel="manifest" href="{prefix}manifest.webmanifest">\n'
                  f'<link rel="icon" href="{prefix}icons/favicon.svg" type="image/svg+xml">\n'
                  f'<link rel="icon" href="{prefix}icons/favicon-32.png" sizes="32x32" type="image/png">\n'
                  f'<link rel="apple-touch-icon" href="{prefix}icons/apple-touch-icon.png">\n'
@@ -184,7 +193,7 @@ def font_faces(prefix):
 def site_head(prefix, title, desc, path, extra=""):
     canonical = f'<link rel="canonical" href="{SITE_URL}/{path}">\n<meta property="og:url" content="{SITE_URL}/{path}">\n' if SITE_URL else ""
     return f"""<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+{SECURITY_META}<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
 <meta name="theme-color" content="{THEME}">
@@ -434,30 +443,9 @@ manifest = {
 }
 write("manifest.webmanifest", json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
 
-# ---------- Netlify headers ----------
-csp = ("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
-       "img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; "
-       "base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'")
-write("_headers", f"""/*
-  X-Content-Type-Options: nosniff
-  Referrer-Policy: strict-origin-when-cross-origin
-  X-Frame-Options: DENY
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
-  Content-Security-Policy: {csp}
-
-/sw.js
-  Cache-Control: no-cache
-
-/datos-titular.js
-  Cache-Control: no-cache
-
-/manifest.webmanifest
-  Content-Type: application/manifest+json; charset=utf-8
-  Cache-Control: no-cache
-
-/fonts/*
-  Cache-Control: public, max-age=31536000, immutable
-""")
+# Old Netlify settings file, if a previous build left one.
+if os.path.exists(os.path.join(OUT, "_headers")):
+    os.remove(os.path.join(OUT, "_headers"))
 
 # ---------- robots + sitemap ----------
 write("robots.txt", "User-agent: *\nAllow: /\n" + (f"\nSitemap: {SITE_URL}/sitemap.xml\n" if SITE_URL else ""))
@@ -474,7 +462,7 @@ write("404.html", f"""<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+{SECURITY_META}<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Página no encontrada · DebtOut</title>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="{THEME}">
@@ -616,7 +604,7 @@ if os.path.isdir(MOBILE):
         print("  aviso: falta mobile/node_modules; ejecuta `npm install` en mobile/ para generar www/native.js")
 
 print("build", build)
-for rel in ["index.html", "app/index.html", "sw.js", "manifest.webmanifest", "_headers", "404.html", "site.js", "datos-titular.js"]:
+for rel in ["index.html", "app/index.html", "sw.js", "manifest.webmanifest", "404.html", "site.js", "datos-titular.js"]:
     print(f"  web/{rel:24s} {os.path.getsize(os.path.join(OUT, rel)):>8,d} B")
 if os.path.isdir(WWW):
     for rel in ["index.html", "native.js"]:

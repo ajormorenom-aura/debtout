@@ -1,4 +1,4 @@
-"""End-to-end checks for DebtOut, served the way Netlify would serve it (see serve.py).
+"""End-to-end checks for DebtOut, served as a static site (see serve.py).
 
 Covers the web app (/app/), the website (/ and the legal pages) and the build for the phone apps (mobile/www),
 which runs here with a pretend phone (window.DebtOutNative) because a browser has no Capacitor.
@@ -142,6 +142,7 @@ with sync_playwright() as p:
         # ---- welcome ----
         check("title", "DebtOut" in pg.title(), pg.title())
         check("manifest link", pg.locator('link[rel="manifest"]').count() == 1)
+        check("security policy inside the app page", "object-src 'none'" in (pg.locator('meta[http-equiv="Content-Security-Policy"]').get_attribute("content") or ""))
         check("beta tag on welcome", pg.locator(".wordmark .beta-tag").inner_text().strip() == "BETA")
         body = pg.locator(".view").inner_text()
         check("no fake login on welcome", "Ya tengo cuenta" not in body and "contraseña" not in body.lower(), body)
@@ -402,6 +403,8 @@ with sync_playwright() as p:
         pg5.wait_for_timeout(900)
         check("website title and hero", "DebtOut" in pg5.title() and "Adiós a las deudas" in pg5.locator("h1").inner_text(), pg5.title())
         check("website links to the app", pg5.locator('a[href="app/"]').count() >= 4)
+        check("security policy inside the website page", pg5.locator('meta[http-equiv="Content-Security-Policy"]').count() == 1
+              and not os.path.exists(os.path.join(ROOT, "web", "_headers")) and not os.path.exists(os.path.join(ROOT, "netlify.toml")))
         check("website images load", pg5.evaluate("[...document.querySelectorAll('.hero img')].every(i => i.complete && i.naturalWidth > 0)"))
         check("website has no fake reviews or ratings", not any(w in pg5.locator("body").inner_text().lower() for w in ["opiniones de usuarios", "valoración", "★", "descargas"]))
         lo, hi = payoff(3200, 19.9, 95), payoff(3200, 19.9, 195)
