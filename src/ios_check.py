@@ -2,7 +2,7 @@
 import json, os, tempfile
 from playwright.sync_api import sync_playwright
 
-BASE = "http://127.0.0.1:8765/"
+BASE = "http://127.0.0.1:8765/app/"
 OUT = os.environ.get("SHOTS_DIR", os.path.join(tempfile.gettempdir(), "debtout-shots"))
 UA = ("Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) "
       "Version/18.6 Mobile/15E148 Safari/604.1")

@@ -3,7 +3,6 @@ import os, sys
 from playwright.sync_api import sync_playwright
 
 OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "web", "icons")
-os.makedirs(OUT, exist_ok=True)
 
 # The DebtOut mark (viewBox 0 0 120 120): a cross of two bars with a bill outline cut into it.
 MARK_SHAPE = (
@@ -81,27 +80,29 @@ def icon_svg(size, kind):
             + defs(uid, size, scale) + body + "</svg>")
 
 
-JOBS = [
-    ("icon-192.png", 192, "any"),
-    ("icon-512.png", 512, "any"),
-    ("icon-maskable-192.png", 192, "maskable"),
-    ("icon-maskable-512.png", 512, "maskable"),
-    ("apple-touch-icon.png", 180, "apple"),
-    ("favicon-32.png", 32, "favicon"),
-]
+if __name__ == "__main__":
+    os.makedirs(OUT, exist_ok=True)
+    JOBS = [
+        ("icon-192.png", 192, "any"),
+        ("icon-512.png", 512, "any"),
+        ("icon-maskable-192.png", 192, "maskable"),
+        ("icon-maskable-512.png", 512, "maskable"),
+        ("apple-touch-icon.png", 180, "apple"),
+        ("favicon-32.png", 32, "favicon"),
+    ]
 
-with sync_playwright() as p:
-    b = p.chromium.launch()
-    for name, size, kind in JOBS:
-        pg = b.new_page(viewport={"width": size, "height": size}, device_scale_factor=1)
-        svg = icon_svg(size, kind)
-        pg.set_content(f'<html><body style="margin:0;background:transparent">{svg}</body></html>')
-        pg.screenshot(path=os.path.join(OUT, name), omit_background=(kind in ("any", "favicon")),
-                      clip={"x": 0, "y": 0, "width": size, "height": size})
-        pg.close()
-        print(name, os.path.getsize(os.path.join(OUT, name)))
-    b.close()
+    with sync_playwright() as p:
+        b = p.chromium.launch()
+        for name, size, kind in JOBS:
+            pg = b.new_page(viewport={"width": size, "height": size}, device_scale_factor=1)
+            svg = icon_svg(size, kind)
+            pg.set_content(f'<html><body style="margin:0;background:transparent">{svg}</body></html>')
+            pg.screenshot(path=os.path.join(OUT, name), omit_background=(kind in ("any", "favicon")),
+                          clip={"x": 0, "y": 0, "width": size, "height": size})
+            pg.close()
+            print(name, os.path.getsize(os.path.join(OUT, name)))
+        b.close()
 
-# Scalable favicon for modern browsers.
-open(os.path.join(OUT, "favicon.svg"), "w").write(icon_svg(64, "favicon"))
-print("favicon.svg", os.path.getsize(os.path.join(OUT, "favicon.svg")))
+    # Scalable favicon for modern browsers.
+    open(os.path.join(OUT, "favicon.svg"), "w").write(icon_svg(64, "favicon"))
+    print("favicon.svg", os.path.getsize(os.path.join(OUT, "favicon.svg")))

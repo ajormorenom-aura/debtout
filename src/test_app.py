@@ -1,9 +1,17 @@
-"""End-to-end checks for the DebtOut beta PWA, served the way Netlify would serve it (see serve.py)."""
-import datetime, json, os, sys, tempfile, traceback
+"""End-to-end checks for DebtOut, served the way Netlify would serve it (see serve.py).
+
+Covers the web app (/app/), the website (/ and the legal pages) and the build for the phone apps (mobile/www),
+which runs here with a pretend phone (window.DebtOutNative) because a browser has no Capacitor.
+Needs the server running: python3 src/serve.py (and, for mobile/www, python3 src/serve.py mobile/www 8766).
+"""
+import datetime, json, math, os, subprocess, sys, tempfile, time, traceback
 from zoneinfo import ZoneInfo
 from playwright.sync_api import sync_playwright
 
-BASE = "http://127.0.0.1:8765/"
+SITE = "http://127.0.0.1:8765/"
+BASE = SITE + "app/"
+NATIVE_BASE = "http://127.0.0.1:8766/"
+VERSION = "0.10.0"
 TMP = tempfile.mkdtemp(prefix="debtout-test-")
 MOBILE = dict(viewport={"width": 390, "height": 844}, device_scale_factor=2, is_mobile=True, has_touch=True,
               locale="es-ES", timezone_id="Europe/Madrid")
@@ -12,6 +20,71 @@ INIT = """
 window.__csp = [];
 document.addEventListener('securitypolicyviolation', function (e) { window.__csp.push(e.violatedDirective + ' ' + e.blockedURI); });
 """
+
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+MONTHS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+SEED = {"v": 3, "stage": "app", "name": "Ana", "salary": 1850, "freq": "mensual",
+        "expenses": [{"id": "e1", "icon": "home", "name": "Alquiler", "amount": 650, "day": 1},
+                     {"id": "e3", "icon": "zap", "name": "Luz e internet", "amount": 95, "day": 12}],
+        "debts": [{"id": "d1", "type": "card", "name": "Tarjeta de crédito", "balance": 3200, "original": 3200, "apr": 19.9, "min": 95, "day": 5}],
+        "goals": [{"id": "g1", "name": "Fondo de emergencia", "target": 3000, "saved": 840}], "debtPct": 18, "savePct": 10,
+        "paid": {"d:d1": True}, "month": 0, "accepted": {"at": "2026-10-22T10:00:00Z", "v": "2026-10-22"}, "installHidden": True}
+
+# A pretend phone: what mobile/native/bridge.js gives the app inside Capacitor, recording every call.
+FAKE_PHONE = """
+window.__nat = { calls: [], store: {}, perm: 'prompt', last: null, back: null };
+(function (plan) { if (plan) window.__nat.store['debtout.app.v3'] = plan; })(__PLAN__);
+window.DebtOutNative = {
+  platform: 'android',
+  storage: {
+    get: function (k) { return Promise.resolve(k in window.__nat.store ? window.__nat.store[k] : null); },
+    set: function (k, v) { window.__nat.store[k] = v; window.__nat.calls.push(['set', k]); return Promise.resolve(); },
+    remove: function (k) { delete window.__nat.store[k]; window.__nat.calls.push(['remove', k]); return Promise.resolve(); }
+  },
+  shareFile: function (name, text) { window.__nat.calls.push(['share', name, text.length]); return Promise.resolve('shared'); },
+  haptic: function (k) { window.__nat.calls.push(['haptic', k]); },
+  notifications: {
+    permission: function () { return Promise.resolve(window.__nat.perm); },
+    request: function () { window.__nat.calls.push(['request']); window.__nat.perm = 'granted'; return Promise.resolve(true); },
+    replace: function (list) { window.__nat.last = list.map(function (n) { return { title: n.title, at: +n.at }; }); window.__nat.calls.push(['replace', list.length]); return Promise.resolve(); },
+    clear: function () { window.__nat.calls.push(['clear']); return Promise.resolve(); }
+  },
+  onBack: function (h) { window.__nat.back = h; },
+  onResume: function (h) { window.__nat.resume = h; },
+  ready: function () { window.__nat.calls.push(['ready']); }
+};
+"""
+
+
+def payoff(bal, apr, pay):
+    """Same maths as the app and the website calculator."""
+    r, m, interest = apr / 1200, 0, 0.0
+    if pay <= bal * r + 0.001:
+        return None
+    while bal > 0.005 and m < 600:
+        i = bal * r
+        interest += i
+        bal = bal + i - pay
+        m += 1
+    return (m, interest) if bal <= 0.005 else None
+
+
+def eur(n):
+    n = int(math.floor(n + 0.5))
+    return f"{n:,}".replace(",", ".") + " €"
+
+
+def dur(m):
+    y, r = divmod(m, 12)
+    if not y:
+        return f"{m} {'mes' if m == 1 else 'meses'}"
+    return f"{y} {'año' if y == 1 else 'años'}" + (f" y {r} {'mes' if r == 1 else 'meses'}" if r else "")
+
+
+# The phone build is served on its own port, as Capacitor serves www/ at the root of its own origin.
+mobile_server = subprocess.Popen([sys.executable, os.path.join(ROOT, "src", "serve.py"), os.path.join(ROOT, "mobile", "www"), "8766"],
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+time.sleep(0.6)
 
 results = []
 
@@ -149,7 +222,7 @@ with sync_playwright() as p:
         # ---- settings ----
         act(pg, "tab", "settings")
         txt = pg.locator(".view").inner_text()
-        check("settings rows", all(x in txt for x in ["Nombre", "Ana", "Beta, todo incluido", "Exportar mis datos", "Restaurar una copia", "Borrar mis datos", "DebtOut beta 0.9.0"]), txt)
+        check("settings rows", all(x in txt for x in ["Nombre", "Ana", "Beta, todo incluido", "Exportar mis datos", "Restaurar una copia", "Borrar mis datos", "DebtOut beta " + VERSION]), txt)
         check("no fake account rows", "Cerrar sesión" not in txt and "Borrar cuenta" not in txt and "email" not in txt.lower(), txt)
         check("no feedback row without a contact email", pg.locator('[data-act="feedback"]').count() == 0)
         check("no install row on a browser that cannot install", pg.locator('[data-act="install"]').count() == 0)
@@ -250,8 +323,8 @@ with sync_playwright() as p:
           const urls = (await c.keys()).map(r => new URL(r.url).pathname);
           return { active: !!reg.active, scope: reg.scope, keys, urls };
         }""")
-        check("service worker active with app cache", sw["active"] and any(k.startswith("debtout-app-0.9.0-") for k in sw["keys"]), sw)
-        check("app shell, fonts and owner file cached", all(u in sw["urls"] for u in ["/", "/fonts/inter-400.v1.woff", "/fonts/inter-display-700.v1.woff", "/datos-titular.js", "/manifest.webmanifest"]), sw["urls"])
+        check("service worker active with app cache", sw["active"] and any(k.startswith("debtout-app-" + VERSION + "-") for k in sw["keys"]), sw)
+        check("app shell, fonts and owner file cached", all(u in sw["urls"] for u in ["/", "/app/", "/fonts/inter-400.v1.woff", "/fonts/inter-display-700.v1.woff", "/datos-titular.js", "/manifest.webmanifest"]), sw["urls"])
         pg.reload()
         pg.wait_for_timeout(1500)
         check("page controlled by the service worker", pg.evaluate("!!navigator.serviceWorker.controller"))
@@ -320,14 +393,176 @@ with sync_playwright() as p:
         # ---- 404 ----
         ctx4, pg4 = new_page(b, MOBILE, errs, reqs)
         r = pg4.goto(BASE + "no-existe")
-        check("404 page", r.status == 404 and "Esta página no existe" in pg4.content())
+        check("404 page", r.status == 404 and "Esta página no existe" in pg4.content() and pg4.locator('a[href="/app/"]').count() == 1)
         ctx4.close()
+
+        # ---- website: home page ----
+        ctx5, pg5 = new_page(b, MOBILE, errs, reqs)
+        pg5.goto(SITE)
+        pg5.wait_for_timeout(900)
+        check("website title and hero", "DebtOut" in pg5.title() and "Adiós a las deudas" in pg5.locator("h1").inner_text(), pg5.title())
+        check("website links to the app", pg5.locator('a[href="app/"]').count() >= 4)
+        check("website images load", pg5.evaluate("[...document.querySelectorAll('.hero img')].every(i => i.complete && i.naturalWidth > 0)"))
+        check("website has no fake reviews or ratings", not any(w in pg5.locator("body").inner_text().lower() for w in ["opiniones de usuarios", "valoración", "★", "descargas"]))
+        lo, hi = payoff(3200, 19.9, 95), payoff(3200, 19.9, 195)
+        out = pg5.evaluate("['r-min-t','r-min-i','r-plan-t','r-plan-i','r-win-t'].map(id => document.getElementById(id).textContent)")
+        check("calculator: minimum payment only", out[0] == dur(lo[0]) and out[1] == "Intereses: " + eur(lo[1]), (out, dur(lo[0]), eur(lo[1])))
+        check("calculator: with 100 € extra", out[2] == dur(hi[0]) and out[3] == "Intereses: " + eur(hi[1]), (out, dur(hi[0]), eur(hi[1])))
+        check("calculator: savings line", out[4] == f"Te ahorras {eur(lo[1] - hi[1])} en intereses y terminas {dur(lo[0] - hi[0])} antes.", out[4])
+        pg5.fill("#c-min", "40")
+        pg5.locator("#c-extra").fill("0")
+        pg5.wait_for_timeout(200)
+        check("calculator: payment below the interest", "no baja nunca" in pg5.locator("#r-win-t").inner_text() and pg5.locator("#r-win.bad").count() == 1, pg5.locator("#r-win-t").inner_text())
+        pg5.fill("#c-bal", "")
+        check("calculator: asks for missing data", "Escribe lo que debes" in pg5.locator("#r-win-t").inner_text())
+        pg5.set_viewport_size({"width": 320, "height": 640})
+        check("no horizontal overflow at 320px (website)", pg5.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"))
+        for slug, title in [("aviso-legal", "Aviso legal"), ("privacidad", "Política de privacidad"), ("cookies", "Política de cookies"), ("terminos", "Términos y condiciones")]:
+            r = pg5.goto(SITE + slug + "/")
+            pg5.wait_for_timeout(300)
+            ok = r.status == 200 and pg5.locator("h1").inner_text() == title and pg5.locator(".legal h3").count() >= 2
+            check(f"legal page /{slug}/", ok and pg5.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), (r.status, pg5.locator("h1").inner_text()))
+        check("legal pages highlight missing owner details", pg5.goto(SITE + "aviso-legal/") and pg5.locator("mark.ph").count() >= 4)
+        check("footer links to every legal page", all(pg5.locator(f'.foot a[href="../{s}/"]').count() == 1 for s in ["aviso-legal", "privacidad", "cookies", "terminos"]))
+        check("no CSP violations (website)", not pg5.evaluate("window.__csp"), pg5.evaluate("window.__csp"))
+        robots = pg5.goto(SITE + "robots.txt")
+        check("robots.txt", robots.status == 200 and "User-agent: *" in robots.text())
+        ctx5.close()
+
+        # someone with a plan comes back to the website; an old install (home screen at /) goes straight to the app
+        ctx5, pg5 = new_page(b, dict(MOBILE, service_workers="block"), errs, reqs)
+        pg5.add_init_script("localStorage.setItem('debtout.app.v3', JSON.stringify({ v: 3, stage: 'app', expenses: [], debts: [], goals: [] }))")
+        pg5.goto(SITE)
+        pg5.wait_for_timeout(500)
+        check("website offers to open the saved plan", "Abrir mi plan" in pg5.locator(".hero .btn-primary").inner_text(), pg5.locator(".hero .btn-primary").inner_text())
+        ctx5.close()
+        ctx5, pg5 = new_page(b, dict(MOBILE, service_workers="block"), errs, reqs)
+        pg5.add_init_script("Object.defineProperty(navigator, 'standalone', { get: () => true })")
+        pg5.goto(SITE)
+        pg5.wait_for_timeout(1200)
+        check("installed app opened at / goes to the app", pg5.url == BASE, pg5.url)
+        ctx5.close()
+
+        # ---- back button / gesture on the web ----
+        ctx6, pg6 = new_page(b, dict(MOBILE, service_workers="block"), errs, reqs)
+        pg6.add_init_script("if (!localStorage.getItem('debtout.app.v3')) localStorage.setItem('debtout.app.v3', JSON.stringify(" + json.dumps(SEED) + "))")
+        pg6.goto(SITE)
+        pg6.goto(BASE)
+        pg6.wait_for_timeout(1300)
+        act(pg6, "tab", "debts", wait=500)
+        pg6.evaluate("history.back()")
+        pg6.wait_for_timeout(700)
+        check("back from a tab goes to Inicio", pg6.locator(".hello-name").count() == 1 and pg6.url == BASE, pg6.url)
+        act(pg6, "bell", wait=500)
+        pg6.evaluate("history.back()")
+        pg6.wait_for_timeout(600)
+        check("back closes a sheet and stays in the app", pg6.locator("#sheet").is_hidden() and pg6.url == BASE, pg6.url)
+        act(pg6, "editPlan", wait=500)
+        pg6.evaluate("history.back()")
+        pg6.wait_for_timeout(700)
+        check("back from an edit screen returns to it", pg6.locator(".hello-name").count() == 1)
+        pg6.evaluate("history.back()")
+        pg6.wait_for_timeout(700)
+        check("back from Inicio leaves the app", pg6.url == SITE, pg6.url)
+
+        # ---- the month shown is the plan's month (it used to drift one month ahead for every month that went by) ----
+        now = datetime.datetime.now(ZoneInfo("Europe/Madrid"))
+        def ym(off):
+            m = now.year * 12 + now.month - 1 + off
+            return m // 12, m % 12
+        y, m = ym(-3)
+        plan = dict(SEED, month=1, startMonth=f"{y}-{m + 1:02d}")
+        pg6.evaluate("p => localStorage.setItem('debtout.app.v3', JSON.stringify(p))", plan)
+        pg6.goto(BASE)
+        pg6.wait_for_timeout(1300)
+        y, m = ym(-2)
+        label = pg6.evaluate("window.__debtout.monthLabel(0)")
+        check("month = start month + months closed", label == f"{MONTHS[m]} de {y}", (label, MONTHS[m], y))
+        check("home says the plan is behind", "Tu plan sigue en" in pg6.locator(".view").inner_text())
+        old = dict(SEED, month=4)
+        old.pop("startMonth", None)
+        pg6.evaluate("p => localStorage.setItem('debtout.app.v3', JSON.stringify(p))", old)
+        pg6.goto(BASE)
+        pg6.wait_for_timeout(1300)
+        label = pg6.evaluate("window.__debtout.monthLabel(0)")
+        check("plans from before the fix show the current month", label == f"{MONTHS[now.month - 1]} de {now.year}" and "Tu plan sigue en" not in pg6.locator(".view").inner_text(), label)
+        ctx6.close()
+
+        # ---- tablet: full screen with a centred column, no phone frame ----
+        ctx7, pg7 = new_page(b, dict(viewport={"width": 820, "height": 1180}, device_scale_factor=2, is_mobile=True, has_touch=True,
+                                     locale="es-ES", timezone_id="Europe/Madrid", service_workers="block"), errs, reqs)
+        pg7.add_init_script("localStorage.setItem('debtout.app.v3', JSON.stringify(" + json.dumps(SEED) + "))")
+        pg7.goto(BASE)
+        pg7.wait_for_timeout(1300)
+        lay = pg7.evaluate("""() => ({ fs: document.documentElement.classList.contains('fs'), bar: getComputedStyle(document.querySelector('.statusbar')).display,
+                                      phone: document.getElementById('phone').getBoundingClientRect().width, col: document.querySelector('.scr').getBoundingClientRect().width })""")
+        check("tablet uses the whole screen", lay["fs"] and lay["bar"] == "none" and lay["phone"] == 820 and lay["col"] <= 620, lay)
+        ctx7.close()
+
+        # ---- the phone app build (mobile/www) with a pretend phone ----
+        www = os.path.join(ROOT, "mobile", "www")
+        idx = open(os.path.join(www, "index.html"), encoding="utf-8").read()
+        check("phone build: native bridge, no manifest", '<script src="native.js"></script>' in idx and "manifest" not in idx and os.path.getsize(os.path.join(www, "native.js")) > 5000)
+        ctx8, pg8 = new_page(b, dict(MOBILE, service_workers="allow"), errs, reqs)
+        pg8.add_init_script(FAKE_PHONE.replace("__PLAN__", json.dumps(json.dumps(dict(SEED, name="Nativa")))))
+        pg8.goto(NATIVE_BASE)
+        pg8.wait_for_timeout(1000)
+        nat = lambda: pg8.evaluate("window.__nat.calls")
+        check("phone: plan read from native storage", "Hola, Nativa" in pg8.locator(".view").inner_text() and json.loads(pg8.evaluate("localStorage.getItem('debtout.app.v3')"))["name"] == "Nativa")
+        check("phone: splash hidden once the app is drawn", ["ready"] in nat())
+        check("phone: no service worker and no install prompts", pg8.evaluate("navigator.serviceWorker.getRegistrations().then(r => r.length)") == 0
+              and pg8.locator(".inst").count() == 0)
+        act(pg8, "tab", "pay", wait=500)
+        check("phone: reminders text mentions notifications", "notificación" in pg8.locator(".rem").inner_text())
+        act(pg8, "remToggle", wait=1200)
+        rem = pg8.evaluate("""() => ({ asked: window.__nat.calls.some(c => c[0] === 'request'), list: window.__nat.last || [],
+                                     nine: (window.__nat.last || []).every(n => new Date(n.at).getHours() === 9 && new Date(n.at).getMinutes() === 0),
+                                     future: (window.__nat.last || []).every(n => n.at > Date.now()),
+                                     sorted: (window.__nat.last || []).every((n, i, a) => !i || a[i - 1].at <= n.at) })""")
+        check("phone: turning reminders on asks permission and schedules notifications", rem["asked"] and 0 < len(rem["list"]) <= 60 and rem["nine"] and rem["future"] and rem["sorted"]
+              and all(n["title"].startswith("Hoy pagas ") for n in rem["list"]), rem)
+        paid_first = pg8.evaluate("""() => { const l = window.__debtout.reminderList(); const card = l.filter(n => n.title.indexOf('Tarjeta') > -1);
+                                            const now = new Date(); return card.length > 0 && card.every(n => n.at.getMonth() !== now.getMonth() || n.at.getFullYear() !== now.getFullYear()); }""")
+        check("phone: a payment already marked as done is reminded next month", paid_first)
+        act(pg8, "payToggle", wait=400, scope=".prow:not(.done) ")
+        check("phone: haptic tap when marking a payment", ["haptic", "tap"] in nat())
+        act(pg8, "tab", "home", wait=500)
+        act(pg8, "bell", wait=500)
+        closed = pg8.evaluate("window.__nat.back()")
+        pg8.wait_for_timeout(400)
+        check("phone: back button closes a sheet", closed is True and pg8.locator("#sheet").is_hidden())
+        act(pg8, "tab", "settings", wait=500)
+        pg8.evaluate("window.__nat.back()")
+        pg8.wait_for_timeout(600)
+        check("phone: back button goes to Inicio", pg8.locator(".hello-name").count() == 1)
+        check("phone: back button at Inicio leaves the app", pg8.evaluate("window.__nat.back()") is False)
+        act(pg8, "tab", "settings", wait=500)
+        act(pg8, "exportData", wait=500)
+        act(pg8, "exportFile", scope=".sheet-panel ", wait=600)
+        shared = [c for c in nat() if c[0] == "share"]
+        check("phone: backup goes through the share sheet", shared and shared[0][1].startswith("debtout-copia-") and shared[0][2] > 200 and bool(state(pg8)["lastExport"]), shared)
+        close_sheet(pg8)
+        act(pg8, "importOpen", wait=500)
+        check("phone: any file can be picked to restore", pg8.locator("#imp-file").get_attribute("accept") is None)
+        close_sheet(pg8)
+        act(pg8, "deleteAsk", wait=500)
+        act(pg8, "deleteYes", wait=600)
+        check("phone: deleting wipes native storage and notifications", ["remove", "debtout.app.v3"] in nat() and ["clear"] in nat())
+        ctx8.close()
+        # a plan made before the native copy existed is copied into native storage
+        ctx8, pg8 = new_page(b, MOBILE, errs, reqs)
+        pg8.add_init_script(FAKE_PHONE.replace("__PLAN__", "null") + ";localStorage.setItem('debtout.app.v3', JSON.stringify(" + json.dumps(SEED) + "))")
+        pg8.goto(NATIVE_BASE)
+        pg8.wait_for_timeout(1000)
+        check("phone: existing plan copied to native storage", pg8.evaluate("JSON.parse(window.__nat.store['debtout.app.v3'] || '{}').name") == "Ana")
+        ctx8.close()
     except Exception:
         traceback.print_exc()
         check("test run finished without exceptions", False)
     b.close()
+mobile_server.terminate()
 
-external = sorted(set(u for u in reqs if not (u.startswith(BASE) or u.startswith("data:") or u.startswith("blob:"))))
+external = sorted(set(u for u in reqs if not (u.startswith(SITE) or u.startswith(NATIVE_BASE) or u.startswith("data:") or u.startswith("blob:"))))
 check("no requests to third parties", not external, external)
 check("no page or console errors", not [e for e in errs if "404" not in e and "no-existe" not in e], errs)
 

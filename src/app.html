@@ -409,24 +409,27 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
 .avatar .ic{width:22px;height:22px}
 .version{font-size:11.5px;color:var(--faint);text-align:center;letter-spacing:.02em}
 
+.sheet-panel:focus{outline:none}
+
 @media (max-height:640px) and (min-width:501px){
   .stage{padding-block:12px}
 }
-/* Real phones and the installed app: full screen, clear of the notch and the home bar. */
-@media (max-width:500px),(max-height:500px) and (pointer:coarse){
-  .stage{padding:0}
-  .phone{width:100%;height:100%;border-radius:0;box-shadow:none;padding-top:env(safe-area-inset-top,0px)}
-  .statusbar,.island{display:none}
-  .scr{padding-top:14px}
-  .phone:not(.tabs) .scr{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
-  .tabbar{padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
-  .sheet-panel{padding-bottom:calc(22px + env(safe-area-inset-bottom,0px))}
-  .toast{top:calc(10px + env(safe-area-inset-top,0px))}
-}
-@media (max-height:500px) and (pointer:coarse){
-  .scr{width:100%;max-width:620px;margin-inline:auto}
-  .sheet-panel{left:50%;right:auto;width:min(620px,100%);transform:translate(-50%,102%)}
-  .sheet.open .sheet-panel{transform:translate(-50%,0)}
+/* Phones, tablets, the installed app and the iPhone/Android app (class "fs", set by the script below the styles):
+   full screen, clear of the notch and the home bar. The phone frame is only for computers. */
+.fs .stage{padding:0}
+.fs .phone{width:100%;height:100%;border-radius:0;box-shadow:none;padding-top:env(safe-area-inset-top,0px)}
+.fs .statusbar,.fs .island{display:none}
+.fs .scr{padding-top:14px}
+.fs .phone:not(.tabs) .scr{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+.fs .tabbar{padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+.fs .sheet-panel{padding-bottom:calc(22px + env(safe-area-inset-bottom,0px))}
+.fs .toast{top:calc(10px + env(safe-area-inset-top,0px))}
+/* Tablets and phones on their side: a centred column instead of stretched cards. */
+@media (min-width:640px){
+  .fs .scr{width:100%;max-width:620px;margin-inline:auto}
+  .fs .tabbar{padding-inline:max(8px,calc(50% - 310px))}
+  .fs .sheet-panel{left:50%;right:auto;width:min(620px,100%);transform:translate(-50%,102%)}
+  .fs .sheet.open .sheet-panel{transform:translate(-50%,0)}
 }
 /* iOS zooms into inputs smaller than 16px; keep them at 16px on touch screens. */
 @media (pointer:coarse){
@@ -436,6 +439,21 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 </style>
+
+<script>
+/* Full screen ("fs") on phones, tablets and inside the iPhone/Android app; a phone frame on computers.
+   Runs before the page is drawn so a tablet never flashes the frame. */
+(function () {
+  var d = document.documentElement, m = null;
+  function native() { try { return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); } catch (e) { return false; } }
+  function apply() { d.classList.toggle("fs", native() || !!(m && m.matches)); }
+  try {
+    m = window.matchMedia("(max-width:500px),(pointer:coarse)");
+    if (m.addEventListener) m.addEventListener("change", apply); else if (m.addListener) m.addListener(apply);
+  } catch (e) { m = null; }
+  apply();
+})();
+</script>
 
 <div class="stage">
   <div class="phone" id="phone">
@@ -464,6 +482,9 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
   var MONTHS = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
   /* Public beta: no accounts and no payments. Every Premium feature is unlocked for free. */
   var BETA = true, VERSION = "__VERSION__", TERMS_V = "2026-10-22";
+  /* Set by native.js inside the iPhone/Android app (Capacitor); null in a browser. */
+  var NATIVE = window.DebtOutNative && typeof window.DebtOutNative === "object" ? window.DebtOutNative : null;
+  function buzz(kind) { if (NATIVE) { try { NATIVE.haptic(kind); } catch (e) { /* ignore */ } } }
   function titular() { var t = window.DEBTOUT_TITULAR; return t && typeof t === "object" ? t : {}; }
   function contactEmail() { var e = String(titular().email || "").trim(); return /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]{2,}$/.test(e) ? e : ""; }
 
@@ -570,7 +591,16 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
     return isFinite(n) ? n : NaN;
   }
   function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
-  function monthDate(off) { var d = new Date(); return new Date(d.getFullYear(), d.getMonth() + st.month + off, 1); }
+  function ym(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); }
+  /* The plan's month is the month the plan started plus the months already closed (not today's month plus them,
+     which drifted one month ahead for every real month that went by). */
+  function planBase() {
+    var m = st.stage === "app" && /^(\d{4})-(\d{2})$/.exec(st.startMonth || "");
+    var d = new Date();
+    return m ? new Date(Number(m[1]), Number(m[2]) - 1, 1) : new Date(d.getFullYear(), d.getMonth(), 1);
+  }
+  function monthDate(off) { var b = planBase(); return new Date(b.getFullYear(), b.getMonth() + (st.stage === "app" ? st.month : 0) + off, 1); }
+  function monthsBehind() { var p = monthDate(0), d = new Date(); return (d.getFullYear() - p.getFullYear()) * 12 + d.getMonth() - p.getMonth(); }
   function monthLabel(off) { var t = monthDate(off); return MONTHS[t.getMonth()] + " de " + t.getFullYear(); }
   function monthShort(off) { return MONTHS[monthDate(off).getMonth()].slice(0, 3); }
   function dur(m) {
@@ -603,7 +633,7 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
       debts: [{ id: "d1", type: "card", name: "Tarjeta de crédito", balance: 3200, original: 3200, apr: 19.9, min: 95, day: 5 }],
       debtPct: 18, savePct: 10,
       goals: [{ id: "g1", name: "Fondo de emergencia", target: 3000, saved: 840 }],
-      premium: false, reminders: false, paid: {}, month: 0, paidTotal: 0, savedTotal: 0,
+      premium: false, reminders: false, paid: {}, month: 0, startMonth: "", paidTotal: 0, savedTotal: 0,
       accepted: null, lastExport: "", remindDay: "", installHidden: false
     };
   }
@@ -636,6 +666,9 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
     d.paid = {};
     if (o.paid && typeof o.paid === "object") Object.keys(o.paid).slice(0, 300).forEach(function (k) { if (/^(review|[ed]:[\w-]{1,24})$/.test(k) && o.paid[k]) d.paid[k] = true; });
     d.month = Math.round(num(o.month, 0, 1200, 0));
+    d.startMonth = /^\d{4}-(0[1-9]|1[0-2])$/.test(o.startMonth) ? o.startMonth : "";
+    /* Plans saved before startMonth existed: assume the open month is the current one. */
+    if (d.stage === "app" && !d.startMonth) { var now = new Date(); d.startMonth = ym(new Date(now.getFullYear(), now.getMonth() - d.month, 1)); }
     d.paidTotal = num(o.paidTotal, 0, 1e10, 0);
     d.savedTotal = num(o.savedTotal, 0, 1e10, 0);
     d.accepted = o.accepted && typeof o.accepted === "object" && typeof o.accepted.v === "string" ? { at: str(o.accepted.at, 40), v: str(o.accepted.v, 20) } : null;
@@ -657,8 +690,29 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
   function save() {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(function () {
-      try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* storage unavailable: keep working in memory */ }
+      var raw = JSON.stringify(st);
+      try { localStorage.setItem(KEY, raw); } catch (e) { /* storage unavailable: keep working in memory */ }
+      if (NATIVE) { try { NATIVE.storage.set(KEY, raw); } catch (e) { /* ignore */ } }
+      planReminders();
     }, 120);
+  }
+  /* In the iPhone/Android app the plan also lives in native storage, which the system does not clear
+     the way it can clear a web view's localStorage. That copy wins when the app starts. */
+  function bootStorage() {
+    if (!NATIVE) return Promise.resolve();
+    var local = null;
+    try { local = localStorage.getItem(KEY); } catch (e) { /* ignore */ }
+    var read = Promise.resolve().then(function () { return NATIVE.storage.get(KEY); });
+    var timeout = new Promise(function (r) { setTimeout(r, 1500, undefined); });
+    return Promise.race([read, timeout]).then(function (raw) {
+      if (typeof raw === "string" && raw) {
+        var o = null;
+        try { o = JSON.parse(raw); } catch (e) { /* ignore */ }
+        var plan = o && o.v === 3 ? normalize(o) : null;
+        if (plan) { st = plan; if (raw !== local) { try { localStorage.setItem(KEY, raw); } catch (e) { /* ignore */ } } return; }
+      }
+      if (raw === null && local) NATIVE.storage.set(KEY, local);
+    }, function () { /* keep what localStorage had */ });
   }
 
   var ui = { screen: null, busy: false, edit: null, prev: "home", terms: false, sheet: null, sheetTok: 0, form: {}, confirmDel: null, toastT: 0 };
@@ -797,6 +851,36 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
     toast(reminderText(due), "bell");
   }
 
+  /* iPhone/Android app: a notification at 9:00 on the day of each payment, for the next 3 months
+     (the system keeps at most 64 per app). Rebuilt after every change and whenever the app comes back. */
+  var REMIND_HOUR = 9;
+  function reminderList(now) {
+    if (!st.reminders || st.stage !== "app") return [];
+    now = now || new Date();
+    var out = [], current = monthsBehind() <= 0;
+    calItems().forEach(function (i) {
+      if (i.kind === "review" || !i.day) return;
+      var amt = i.amount != null ? " (" + eur(i.amount) + ")" : "";
+      /* Already marked as done this month: start with next month's payment. */
+      for (var k = st.paid[i.id] && current ? 1 : 0, n = 0; n < 3 && k < 5; k++) {
+        var y = now.getFullYear(), m = now.getMonth() + k;
+        var at = new Date(y, m, Math.min(i.day, new Date(y, m + 1, 0).getDate()), REMIND_HOUR, 0, 0);
+        if (at <= now) continue;
+        out.push({ at: at, title: "Hoy pagas " + (i.name || "un pago") + amt, body: i.kind === "debt" ? "Es la cuota de tu plan para salir de deudas. Márcala como hecha en DebtOut." : "Cuando lo pagues, márcalo como hecho en DebtOut." });
+        n++;
+      }
+    });
+    return out.sort(function (a, b) { return a.at - b.at; }).slice(0, 60);
+  }
+  var remindTimer = 0;
+  function planReminders() {
+    if (!NATIVE) return;
+    clearTimeout(remindTimer);
+    remindTimer = setTimeout(function () {
+      try { NATIVE.notifications.replace(reminderList()); } catch (e) { /* ignore */ }
+    }, 600);
+  }
+
   /* Install: Chrome/Edge/Android hand us an install prompt; iPhone and iPad need the Share menu. */
   var installEvt = null;
   function standalone() {
@@ -806,7 +890,7 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
     var u = navigator.userAgent || "";
     return /iPhone|iPad|iPod/.test(u) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   }
-  function canInstall() { return !standalone() && (!!installEvt || isIOS()); }
+  function canInstall() { return !NATIVE && !standalone() && (!!installEvt || isIOS()); }
 
   /* ---------- shared pieces ---------- */
   function topbar(o) {
@@ -1011,10 +1095,13 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
     }
     var due = st.reminders ? dueSoon() : [];
     var nm = firstName();
+    var lag = v.valid && monthsBehind() > 0
+      ? '<div class="status info">' + ic("calendar") + "<span>Tu plan sigue en " + monthLabel(0) + ". Cuando hayas hecho esos pagos, cierra el mes para pasar a " + monthLabel(1) + ".</span></div>"
+      : "";
     return '<section class="scr">' +
       '<header class="app-top"><div class="hello">' + mark("mark-sm") + '<div><p class="sm muted">' + cap(monthLabel(0)) + '</p><p class="hello-name">' + (nm ? "Hola, " + esc(nm) : "Hola") + "</p></div></div>" +
       '<button class="icon-btn" data-act="bell" aria-label="Avisos de pago">' + ic("bell") + (unpaid ? '<span class="badge-dot"></span>' : "") + "</button></header>" +
-      heroCard(v) + warn +
+      heroCard(v) + warn + lag +
       (due.length ? '<div class="status rem">' + ic("bell") + "<span>" + esc(reminderText(due)) + "</span></div>" : "") +
       '<h2 class="h-sec">Este mes</h2>' + allocBlock(v) +
       '<h2 class="h-sec">Siguiente paso</h2>' + nextStep() +
@@ -1044,7 +1131,7 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
     var ms = monthShort(0);
     return '<section class="scr">' +
       '<header class="app-top"><div><h1 class="h-md">Pagos</h1><p class="sm muted">' + cap(monthLabel(0)) + "</p></div></header>" +
-      '<div class="rem"><div><p class="rem-t">Avisos de pago</p><p class="sm muted">Al abrir DebtOut te avisamos de lo que vence hoy y en los próximos 2 días' + (isPremium() ? "" : ", con Premium") + '.</p></div><button class="switch' + (st.reminders ? " on" : "") + '" data-act="remToggle" role="switch" aria-checked="' + st.reminders + '" aria-label="Avisos de pago"></button></div>' +
+      '<div class="rem"><div><p class="rem-t">Avisos de pago</p><p class="sm muted">' + (NATIVE ? "Te enviamos una notificación a las 9:00 el día de cada pago. Al abrir DebtOut, también ves lo que vence en los próximos 2 días" : "Al abrir DebtOut te avisamos de lo que vence hoy y en los próximos 2 días") + (isPremium() ? "" : ", con Premium") + '.</p></div><button class="switch' + (st.reminders ? " on" : "") + '" data-act="remToggle" role="switch" aria-checked="' + st.reminders + '" aria-label="Avisos de pago"></button></div>' +
       '<div class="prog-wrap"><div class="lbl-row"><span>' + done + " de " + tot + " hechos</span><span>" + Math.round(done / tot * 100) + ' %</span></div><span class="prog"><span style="width:' + (done / tot * 100).toFixed(1) + '%"></span></span></div>' +
       '<div class="list">' + items.map(function (i) {
         var on = !!st.paid[i.id];
@@ -1230,7 +1317,9 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
       (items.length ? '<div class="ntf">' + items.map(function (i) {
         return '<div class="next"><div class="daybox ' + (i.kind === "debt" ? "debt" : "") + '"><b>' + i.day + "</b><small>" + monthShort(0) + '</small></div><div class="next-main"><p class="next-t">' + esc(i.name) + '</p><p class="sm muted">' + (i.amount != null ? eur(i.amount) : "Revisión mensual") + "</p></div></div>";
       }).join("") + "</div>" : '<div class="status ok">' + ic("check") + "<span>No tienes pagos pendientes este mes.</span></div>") +
-      '<div class="status info">' + ic("bell") + "<span>" + (st.reminders ? "Avisos activados: al abrir DebtOut te recordamos lo que vence en los próximos 2 días." : "Activa los avisos en Pagos y, al abrir DebtOut, te recordaremos lo que vence en los próximos 2 días.") + "</span></div>" +
+      '<div class="status info">' + ic("bell") + "<span>" + (NATIVE
+        ? (st.reminders ? "Avisos activados: te enviamos una notificación el día de cada pago." : "Activa los avisos en Pagos y te enviaremos una notificación el día de cada pago.")
+        : (st.reminders ? "Avisos activados: al abrir DebtOut te recordamos lo que vence en los próximos 2 días." : "Activa los avisos en Pagos y, al abrir DebtOut, te recordaremos lo que vence en los próximos 2 días.")) + "</span></div>" +
       '<button class="btn btn-ghost" data-act="goPay">Ver todos los pagos</button>';
   };
   function exportPayload() {
@@ -1239,14 +1328,15 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
   SH.export = function () {
     return sheetHead("Exportar mis datos") +
       '<p class="muted sm">Guarda una copia de tu plan en tu móvil, en tu ordenador o en tu nube. Para recuperarla, usa Restaurar una copia en este o en otro dispositivo.</p>' +
-      '<button class="btn btn-primary" data-act="exportFile">' + ic("download") + "Descargar copia</button>" +
+      '<button class="btn btn-primary" data-act="exportFile">' + ic(NATIVE ? "share" : "download") + (NATIVE ? "Guardar o enviar la copia" : "Descargar copia") + "</button>" +
       '<textarea id="exp-json" readonly aria-label="Tus datos en formato JSON">' + esc(exportPayload()) + "</textarea>" +
       '<button class="btn btn-ghost" data-act="copyExport">' + ic("copy") + "Copiar el texto</button>";
   };
   SH.import = function () {
     return sheetHead("Restaurar una copia") +
       '<p class="muted sm">Elige el archivo que guardaste con Exportar mis datos o pega su texto.' + (st.stage === "app" ? " Sustituirá el plan que tienes ahora en este dispositivo." : "") + "</p>" +
-      '<label class="btn btn-primary file-pick">' + ic("upload") + 'Elegir archivo<input type="file" id="imp-file" accept=".json,application/json,text/plain" aria-label="Elegir archivo de copia"></label>' +
+      /* No type filter in the app: a copy saved to Drive or Files can come back without its JSON type. */
+      '<label class="btn btn-primary file-pick">' + ic("upload") + 'Elegir archivo<input type="file" id="imp-file"' + (NATIVE ? "" : ' accept=".json,application/json,text/plain"') + ' aria-label="Elegir archivo de copia"></label>' +
       '<textarea id="imp-json" placeholder="O pega aquí el texto de tu copia" aria-label="Texto de la copia" autocomplete="off" spellcheck="false"></textarea>' +
       '<p class="err" id="serr" role="alert"></p>' +
       '<button class="btn btn-ghost" data-act="importDo">Restaurar desde el texto</button>';
@@ -1275,15 +1365,25 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
       '<button class="btn btn-danger" data-act="deleteYes">Borrar todo</button><button class="btn btn-ghost" data-act="closeSheet">Cancelar</button>';
   };
 
+  /* While a sheet is open the screen behind it can't be reached with Tab or a screen reader. */
+  function setInert(on) {
+    ["#view", "#tabbar"].forEach(function (s) { var e = $(s); if (e) { if (on) e.setAttribute("inert", ""); else e.removeAttribute("inert"); } });
+  }
   function openSheet(kind, data) {
+    if (!ui.sheet) ui.sheetReturn = document.activeElement;
     ui.sheet = { kind: kind, data: data || {} };
     ui.confirmDel = null;
     var el = $("#sheet"), tok = ++ui.sheetTok;
     el.classList.remove("open");
     el.hidden = false;
-    el.innerHTML = '<div class="sheet-bg" data-act="closeSheet"></div><div class="sheet-panel" role="dialog" aria-modal="true">' + SH[kind](ui.sheet.data) + "</div>";
+    el.innerHTML = '<div class="sheet-bg" data-act="closeSheet"></div><div class="sheet-panel" role="dialog" aria-modal="true" tabindex="-1">' + SH[kind](ui.sheet.data) + "</div>";
+    var panel = el.querySelector(".sheet-panel"), h = panel.querySelector("h2");
+    if (h) { h.id = "sheet-title"; panel.setAttribute("aria-labelledby", "sheet-title"); }
+    setInert(true);
+    try { panel.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
     refreshLive();
     requestAnimationFrame(function () { requestAnimationFrame(function () { if (tok === ui.sheetTok) el.classList.add("open"); }); });
+    syncBackGuard();
   }
   function closeSheet(instant) {
     var el = $("#sheet");
@@ -1292,8 +1392,13 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
     ui.confirmDel = null;
     var tok = ++ui.sheetTok;
     el.classList.remove("open");
+    setInert(false);
+    var back = ui.sheetReturn;
+    ui.sheetReturn = null;
+    if (back && back.isConnected && back.focus && !/^(INPUT|TEXTAREA)$/.test(back.tagName)) { try { back.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
     var done = function () { if (tok === ui.sheetTok) { el.hidden = true; el.innerHTML = ""; } };
     if (instant || reduced()) done(); else setTimeout(done, 260);
+    syncBackGuard();
   }
   function openDebtForm(d) { ui.form = { id: d ? d.id : null, type: d ? d.type : "card" }; openSheet("debt", { debt: d || null }); }
   function openGoalForm(g) { ui.form = { id: g ? g.id : null }; openSheet("goal", { goal: g || null }); }
@@ -1326,12 +1431,9 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
     { id: "goals", l: "Metas", i: "target" },
     { id: "settings", l: "Ajustes", i: "user" }
   ];
-  var LOAD_MSG = {
-    welcome: "Cargando", start: "Preparando DebtOut", salary: "Creando tu plan",
-    expenses: "Guardando tu sueldo", obDebts: "Sumando tus gastos", split: "Preparando el reparto",
-    result: "Calculando tu plan", home: "Actualizando tu panel", debts: "Ordenando tus deudas",
-    pay: "Mirando el calendario", goals: "Revisando tus metas", settings: "Abriendo ajustes", premium: "Cargando planes"
-  };
+  /* The bill loader is kept for moments that do real work (calculating the plan, closing a month, restoring
+     a copy); moving between tabs and steps is instant, as in a native app. */
+  var LOAD_MSG = { result: "Calculando tu plan" };
   function loaderHTML(msg) {
     return '<div class="loader" role="status"><div class="ld">' + mark() + '</div><div class="ld-shadow"></div><p class="ld-text">' + esc(msg) + "</p></div>";
   }
@@ -1355,8 +1457,8 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
       renderChrome(screen);
       view.classList.remove("enter");
       view.classList.add("leave");
-      await wait(fast ? 0 : 170);
-      if (!o.skipLoader) {
+      await wait(fast ? 0 : 140);
+      if (!o.skipLoader && (o.msg || o.long)) {
         view.innerHTML = loaderHTML(o.msg || LOAD_MSG[screen] || "Cargando");
         view.scrollTop = 0;
         void view.offsetWidth;
@@ -1378,6 +1480,7 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
       view.classList.remove("leave");
     } finally {
       ui.busy = false;
+      syncBackGuard();
     }
   }
   function rerender() {
@@ -1397,6 +1500,37 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
     ui.edit = null;
     go(o, { after: function () { toast(msg); } });
   }
+
+  /* Back (Android button or gesture, browser back): close the sheet, go one step back, or return to Inicio.
+     Returns false when there is nothing left to go back to. */
+  function isTab(s) { return TABS.some(function (t) { return t.id === s; }); }
+  function canGoBack() { return !!(ui.sheet || backTarget() || (isTab(ui.screen) && ui.screen !== "home")); }
+  function handleBack() {
+    if (ui.busy) return true;
+    if (ui.sheet) { closeSheet(); return true; }
+    if (backTarget()) { ACT.back(); return true; }
+    if (isTab(ui.screen) && ui.screen !== "home") { go("home"); return true; }
+    return false;
+  }
+  /* On the web, one extra history entry stands in for "something to go back to"; the browser's back button
+     pops it and we handle the press instead of leaving the app. The iPhone/Android app uses onBack instead. */
+  var guard = { on: !!(window.history && history.state && history.state.debtout), skip: 0 };
+  function syncBackGuard() {
+    if (NATIVE || ui.busy || !window.history || !history.pushState) return;
+    var need = canGoBack();
+    try {
+      if (need && !guard.on) { history.pushState({ debtout: 1 }, ""); guard.on = true; }
+      else if (!need && guard.on) { guard.on = false; guard.skip++; history.back(); }
+    } catch (e) { /* ignore */ }
+  }
+  window.addEventListener("popstate", function () {
+    if (guard.skip) { guard.skip--; return; }
+    if (!guard.on) return;
+    guard.on = false;
+    handleBack();
+    syncBackGuard();
+  });
+  if (NATIVE) NATIVE.onBack(handleBack);
 
   /* ---------- actions ---------- */
   var ACT = {
@@ -1524,11 +1658,12 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
     calc: function () { ACT.next(); },
     adjust: function () { go("split"); },
     finish: function () {
-      st.stage = "app"; st.month = 0; st.paid = {}; st.paidTotal = 0; st.savedTotal = 0;
+      st.stage = "app"; st.month = 0; st.startMonth = ym(new Date()); st.paid = {}; st.paidTotal = 0; st.savedTotal = 0;
       st.debts.forEach(function (d) { d.original = d.balance; });
       save();
       /* Ask the browser to keep this site's storage (best effort; ignored where unsupported). */
       try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {}); } catch (e) { /* ignore */ }
+      buzz("success");
       go("home", { msg: "Preparando tu panel", after: function () { toast("Plan activado"); } });
     },
     tab: function (d) { if (d.val !== ui.screen) go(d.val); },
@@ -1537,7 +1672,7 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
       if (st.paid[d.id]) delete st.paid[d.id]; else st.paid[d.id] = true;
       var on = !!st.paid[d.id];
       save(); rerender();
-      if (on) toast("Marcado como hecho");
+      if (on) { buzz("tap"); toast("Marcado como hecho"); }
     },
     closeMonth: function () {
       var v = calc();
@@ -1559,6 +1694,7 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
       });
       st.month += 1; st.paid = {}; st.paidTotal += paidSum; st.savedTotal += savedNow;
       save();
+      buzz("success");
       var allPaid = st.debts.length && st.debts.every(function (d) { return d.balance <= 0; });
       go("home", {
         msg: "Cerrando " + name.split(" de ")[0],
@@ -1595,6 +1731,13 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
     exportFile: function () {
       var text = exportPayload(), name = "debtout-copia-" + isoDay() + ".json";
       var done = function () { st.lastExport = new Date().toISOString(); save(); };
+      /* iPhone/Android app: the share sheet saves the file to Files or Drive, or sends it. */
+      if (NATIVE) {
+        Promise.resolve().then(function () { return NATIVE.shareFile(name, text); }).then(function (r) {
+          if (r === "shared") { done(); toast("Copia guardada"); }
+        }, function () { toast("No se pudo guardar el archivo. Copia el texto.", "warn"); });
+        return;
+      }
       var download = function () {
         try {
           var url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
@@ -1664,12 +1807,18 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
       var add = Math.min(50, Math.max(0, g.target - g.saved));
       if (add <= 0) return toast("Esta meta ya está completa");
       g.saved += add; save(); rerender();
+      buzz(g.saved >= g.target ? "success" : "tap");
       toast(g.saved >= g.target ? "¡Meta conseguida: " + g.name + "!" : "+" + eur(add) + " a " + g.name);
     },
     remToggle: function () {
       if (!isPremium() && !st.reminders) return openSheet("gate", { what: "rem" });
       st.reminders = !st.reminders; st.remindDay = ""; save(); rerender();
-      toast(st.reminders ? "Avisos de pago activados" : "Avisos de pago desactivados");
+      if (!st.reminders || !NATIVE) return toast(st.reminders ? "Avisos de pago activados" : "Avisos de pago desactivados");
+      /* The app asks for permission to send notifications the first time; without it, reminders stay in the app. */
+      Promise.resolve().then(function () { return NATIVE.notifications.request(); }).then(function (ok) {
+        planReminders();
+        toast(ok ? "Avisos activados: te avisaremos el día de cada pago" : "Activa las notificaciones de DebtOut en los ajustes del móvil para recibir los avisos", ok ? "" : "warn");
+      }, function () { toast("Avisos de pago activados"); });
     },
     bell: function () { openSheet("notif"); },
     exportData: function () { openSheet("export"); },
@@ -1682,6 +1831,7 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
     deleteYes: function () {
       clearTimeout(saveTimer);
       try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
+      if (NATIVE) { try { NATIVE.storage.remove(KEY); NATIVE.notifications.clear(); } catch (e) { /* ignore */ } }
       st = defaults(); ui.terms = false; ui.edit = null;
       closeSheet(true);
       go("welcome", { msg: "Borrando tus datos", after: function () { toast("Datos borrados de este dispositivo"); } });
@@ -1771,12 +1921,14 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
       if (fn) { e.preventDefault(); fn(t.dataset, t); }
     }
   });
-  var touchX = null;
-  $("#view").addEventListener("touchstart", function (e) { touchX = e.touches[0].clientX; }, { passive: true });
+  /* Swipe right to go back a step; a mostly vertical scroll never counts as a swipe. */
+  var touch = null;
+  $("#view").addEventListener("touchstart", function (e) { touch = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
   $("#view").addEventListener("touchend", function (e) {
-    if (touchX === null) return;
-    var dx = e.changedTouches[0].clientX - touchX; touchX = null;
-    if (dx > 70 && touchX === null && backTarget() && !ui.busy && !ui.sheet && e.target.closest && !e.target.closest('input[type="range"]')) ACT.back();
+    if (!touch) return;
+    var dx = e.changedTouches[0].clientX - touch.x, dy = e.changedTouches[0].clientY - touch.y;
+    touch = null;
+    if (dx > 70 && Math.abs(dy) < dx * 0.6 && backTarget() && !ui.busy && !ui.sheet && e.target.closest && !e.target.closest('input[type="range"]')) ACT.back();
   });
 
   function tick() {
@@ -1787,9 +1939,27 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
   function init() {
     tick();
     setInterval(tick, 20000);
-    var first = st.stage === "app" ? "home" : "welcome";
-    $("#view").innerHTML = loaderHTML("Iniciando DebtOut");
-    setTimeout(function () { go(first, { skipLoader: true, after: first === "home" ? remindOnOpen : null }); }, reduced() ? 40 : 800);
+    /* The iPhone/Android app already shows a splash screen, so it skips the intro loader. */
+    if (!NATIVE) $("#view").innerHTML = loaderHTML("Iniciando DebtOut");
+    var started = Date.now();
+    bootStorage().then(function () {
+      var first = st.stage === "app" ? "home" : "welcome";
+      var delay = NATIVE ? 0 : Math.max(0, (reduced() ? 40 : 800) - (Date.now() - started));
+      setTimeout(function () {
+        go(first, { skipLoader: true, after: function () {
+          if (NATIVE) { try { NATIVE.ready(); } catch (e) { /* ignore */ } }
+          if (first === "home") remindOnOpen();
+          planReminders();
+        } });
+      }, delay);
+    });
+  }
+  /* Coming back to the app (from another app or a locked screen): refresh dates and reminders. */
+  function onReturn() {
+    planReminders();
+    if (ui.busy || ui.sheet || ui.screen !== "home") return;
+    rerender();
+    remindOnOpen();
   }
 
   /* ---------- installable app ---------- */
@@ -1804,18 +1974,16 @@ mark.ph{background:rgba(240,189,79,.18);color:var(--amber);padding:0 4px;border-
     if (!ui.busy && !ui.sheet && (ui.screen === "home" || ui.screen === "settings")) rerender();
     toast("DebtOut instalada");
   });
-  document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState !== "visible" || ui.busy || ui.sheet || ui.screen !== "home") return;
-    rerender();
-    remindOnOpen();
-  });
-  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") onReturn(); });
+  if (NATIVE) NATIVE.onResume(onReturn);
+  /* The service worker lives at the site root (it also keeps the home page and old installs working offline). */
+  if (!NATIVE && "serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
     window.addEventListener("load", function () {
-      navigator.serviceWorker.register("sw.js").catch(function () { /* the app works without it */ });
+      navigator.serviceWorker.register("__SW_URL__").catch(function () { /* the app works without it */ });
     });
   }
 
-  window.__debtout = { st: function () { return st; }, ui: ui, calc: calc, simulate: simulate, minOnly: minOnly };
+  window.__debtout = { st: function () { return st; }, ui: ui, calc: calc, simulate: simulate, minOnly: minOnly, reminderList: reminderList, monthLabel: monthLabel };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();
 </script>
