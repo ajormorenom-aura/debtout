@@ -439,7 +439,19 @@ with sync_playwright() as p:
         check("website links to the app", pg5.locator('a[href="app/"]').count() >= 4)
         check("security policy inside the website page", pg5.locator('meta[http-equiv="Content-Security-Policy"]').count() == 1
               and not os.path.exists(os.path.join(ROOT, "web", "_headers")) and not os.path.exists(os.path.join(ROOT, "netlify.toml")))
-        check("website images load", pg5.evaluate("[...document.querySelectorAll('.hero img')].every(i => i.complete && i.naturalWidth > 0)"))
+        live_txt = pg5.locator("#live").inner_text()
+        check("hero phone shows the app's home screen", all(s in live_txt for s in ["Hola, Ana", "Libre de deudas en", "Siguiente paso", "Cerrar el mes", "Gastos fijos"])
+              and pg5.locator("#live").get_attribute("role") == "img", live_txt[:120])
+        pg5.locator("#live").scroll_into_view_if_needed()
+        pg5.wait_for_selector("#lp-notif.on", timeout=4000)
+        check("hero phone: a payment reminder arrives", pg5.locator("#lp-n-t").inner_text() == "Hoy pagas Luz e internet (95 €)", pg5.locator("#lp-n-t").inner_text())
+        for _ in range(40):  # the page's CSP blocks wait_for_function, so poll
+            if pg5.locator("#lp-next-t").inner_text() == "Pagar Préstamo del coche":
+                break
+            pg5.wait_for_timeout(200)
+        check("hero phone: the payment is marked as done and the next one comes up", "Marcado como hecho" in pg5.locator("#lp-toast").inner_text()
+              and pg5.locator("#lp-day.debt").count() == 1)
+        pg5.evaluate("window.scrollTo(0, 0)")
         price_txt = pg5.locator("#precio").inner_text()
         check("website shows the Premium price", "1 mes gratis" in price_txt and "y después " + PRICE + " al mes" in price_txt, price_txt)
         stale = [os.path.relpath(os.path.join(d, f), ROOT) for top in ["web", os.path.join("mobile", "www")] for d, _, fs in os.walk(os.path.join(ROOT, top))
@@ -469,6 +481,23 @@ with sync_playwright() as p:
         check("no CSP violations (website)", not pg5.evaluate("window.__csp"), pg5.evaluate("window.__csp"))
         robots = pg5.goto(SITE + "robots.txt")
         check("robots.txt", robots.status == 200 and "User-agent: *" in robots.text())
+        ctx5.close()
+
+        # the hero phone stays still for people who prefer less motion, and the side labels never cover its screen
+        ctx5, pg5 = new_page(b, dict(MOBILE, reduced_motion="reduce", service_workers="block"), errs, reqs)
+        pg5.goto(SITE)
+        pg5.locator("#live").scroll_into_view_if_needed()
+        pg5.wait_for_timeout(2500)
+        check("hero phone: still with reduced motion", pg5.locator("#lp-notif.on").count() == 1 and pg5.locator("#lp-next-t").inner_text() == "Pagar Luz e internet")
+        ctx5.close()
+        ctx5, pg5 = new_page(b, dict(DESKTOP, viewport={"width": 1440, "height": 900}, service_workers="block"), errs, reqs)
+        pg5.goto(SITE)
+        pg5.wait_for_timeout(600)
+        lay = pg5.evaluate("""(() => { const s = document.querySelector('#live .lp').getBoundingClientRect(), pad = 20 * s.width / 390;
+            return [...document.querySelectorAll('.float')].map(f => { const r = f.getBoundingClientRect();
+              return r.right <= s.left + pad || r.left >= s.right - pad || r.bottom <= s.top || r.top >= s.bottom; }); })()""")
+        check("hero labels beside the phone, not over its screen", lay == [True, True, True], lay)
+        check("no horizontal overflow at 1440px (website)", pg5.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"))
         ctx5.close()
 
         # someone with a plan comes back to the website; an old install (home screen at /) goes straight to the app
