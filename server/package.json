@@ -1,0 +1,22 @@
+{
+  "name": "debtout-asistente",
+  "version": "0.10.0",
+  "private": true,
+  "description": "Servidor del asistente de IA de DebtOut (Cloudflare Workers).",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "node --test test/worker.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "wrangler": "^4.154.0"
+  }
+}

@@ -1,6 +1,6 @@
 """Build a phone-friendly preview of the beta for the claude.ai artifact viewer.
 
-Same app as the Netlify build, adapted to the viewer's frame: fonts inlined as data URIs, no service worker,
+Same app as the website build, adapted to the viewer's frame: fonts inlined as data URIs, no service worker,
 no install prompts, no file download (the viewer blocks downloads; copying the text still works),
 and the notch / home-bar insets left to the viewer's own page padding.
 """
@@ -9,12 +9,13 @@ import base64, json, os, re
 SRC = os.path.dirname(os.path.abspath(__file__))
 FONTS = os.path.join(SRC, "..", "web", "fonts")
 OUT = os.path.join(SRC, "preview", "debtout-beta.html")
-VERSION = "0.9.0"
+VERSION = "0.10.0"
+PREMIUM_PRICE = re.search(r'^PREMIUM_PRICE = "([^"]+)"', open(os.path.join(SRC, "build.py"), encoding="utf-8").read(), re.M).group(1)
 
 app = open(os.path.join(SRC, "app.html"), encoding="utf-8").read()
 
-# legal texts, same source as the Netlify build
-legal_src = open(os.path.join(SRC, "legal_beta.html"), encoding="utf-8").read()
+# legal texts, same source as the website build
+legal_src = open(os.path.join(SRC, "legal_beta.html"), encoding="utf-8").read().replace("{{PREMIUM_PRICE}}", PREMIUM_PRICE)
 parts = re.split(r"<!--doc:(\w+)\|([^>]+)-->", legal_src)
 docs = {}
 for i in range(1, len(parts), 3):
@@ -30,6 +31,9 @@ def swap(s, old, new, count=1):
 
 app = swap(app, "/*LEGAL_START*/{}/*LEGAL_END*/", "/*LEGAL_START*/" + legal_json + "/*LEGAL_END*/")
 app = swap(app, '"__VERSION__"', json.dumps(VERSION + " · vista previa"))
+app = swap(app, "__SW_URL__", "sw.js")
+app = swap(app, '"__BETA_END__"', '""')
+app = swap(app, '"__PREMIUM_PRICE__"', json.dumps(PREMIUM_PRICE))
 
 # fonts as data URIs
 for name in sorted(os.listdir(FONTS)):
@@ -41,12 +45,12 @@ for name in sorted(os.listdir(FONTS)):
 app = app.replace("env(safe-area-inset-top,0px)", "0px").replace("env(safe-area-inset-bottom,0px)", "0px")
 
 # no service worker or install prompts inside the viewer
-app = swap(app, "function canInstall() { return !standalone() && (!!installEvt || isIOS()); }", "function canInstall() { return false; }")
-app = swap(app, 'if ("serviceWorker" in navigator && (location.protocol === "https:"', 'if (false && "serviceWorker" in navigator && (location.protocol === "https:"')
+app = swap(app, "function canInstall() { return !NATIVE && !standalone() && (!!installEvt || isIOS()); }", "function canInstall() { return false; }")
+app = swap(app, 'if (!NATIVE && "serviceWorker" in navigator && (location.protocol === "https:"', 'if (false && "serviceWorker" in navigator && (location.protocol === "https:"')
 
 # downloads are blocked in the viewer: offer the copy button only
 app = swap(app, """'<p class="muted sm">Guarda una copia de tu plan en tu móvil, en tu ordenador o en tu nube. Para recuperarla, usa Restaurar una copia en este o en otro dispositivo.</p>' +
-      '<button class="btn btn-primary" data-act="exportFile">' + ic("download") + "Descargar copia</button>" +""",
+      '<button class="btn btn-primary" data-act="exportFile">' + ic(NATIVE ? "share" : "download") + (NATIVE ? "Guardar o enviar la copia" : "Descargar copia") + "</button>" +""",
            """'<p class="muted sm">Copia el texto y guárdalo en una nota o envíatelo. Para recuperarlo, usa Restaurar una copia y pega el texto.</p>' +""")
 app = swap(app, """'<button class="btn btn-ghost" data-act="copyExport">' + ic("copy") + "Copiar el texto</button>";""",
            """'<button class="btn btn-primary" data-act="copyExport">' + ic("copy") + "Copiar el texto</button>";""")

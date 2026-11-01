@@ -3,7 +3,7 @@
 Needs fontTools (pip install fonttools) and the static Inter OTF files (https://github.com/rsms/inter).
 Usage: python3 src/make_fonts.py /path/to/inter/otf/folder
 If you change the subset, bump the ".v1" in the file names here, in app.html and in build.py (CORE list),
-because web/_headers caches fonts for a year.
+because the service worker keeps fonts by file name and never asks for them again.
 """
 import os, subprocess, sys
 

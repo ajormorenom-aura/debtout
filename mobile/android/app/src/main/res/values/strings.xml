@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">DebtOut</string>
+    <string name="title_activity_main">DebtOut</string>
+    <string name="package_name">es.debtout.app</string>
+    <string name="custom_url_scheme">es.debtout.app</string>
+</resources>
